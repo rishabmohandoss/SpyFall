@@ -154,8 +154,7 @@ function showRevealScreen(players) {
   switchScreen("revealScreen");
 
   const startBtn = document.getElementById("startGameBtn");
-  startBtn.style.display = "flex"; // <--- CHANGE TO FLEX
-
+  startBtn.style.display = "none"; // FIX: Kept hidden until all cards are viewed
 
   const container = document.getElementById("playerButtons");
   container.innerHTML = "";
@@ -166,6 +165,7 @@ function showRevealScreen(players) {
   players.forEach(player => {
     const button = document.createElement("button");
     button.textContent = player;
+    // FIX: Passing the button element directly
     button.onclick = () => revealCard(player, button);
     container.appendChild(button);
   });
@@ -174,9 +174,9 @@ function showRevealScreen(players) {
 /* ===========================
    REVEAL CARD
 =========================== */
-function revealCard(playerName) {
+function revealCard(playerName, buttonElement) {
   const card = document.getElementById('card');
-  const data = assignments[playerName]; // assignments is created in startSetup()
+  const data = assignments[playerName];
 
   if (!data) return;
 
@@ -194,18 +194,21 @@ function revealCard(playerName) {
   `;
 
   card.style.display = "block";
-  // Mark player as 'seen' if you want to dim their button
-  document.querySelector(`button[onclick*="${playerName}"]`).style.opacity = "0.5";
-}
-  // Store current player in a data attribute for hideCard to find
-  card.dataset.currentPlayer = player;
+  
+  // FIX: Dim the button using the passed element, avoiding querySelector error
+  if (buttonElement) {
+    buttonElement.style.opacity = "0.5";
+  }
+
+  // FIX: using playerName instead of undefined 'player' variable
+  card.dataset.currentPlayer = playerName;
 
   card.onclick = (e) => {
     if (e.target === card || e.target.tagName === 'SMALL' || e.target.tagName === 'P' || e.target.tagName === 'H2' || e.target.tagName === 'HR') {
       hideCard(e);
     }
   };
-}
+} // FIX: Removed the extra closing brace that caused the Syntax Error
 
 /* ===========================
    HIDE CARD
@@ -228,7 +231,10 @@ function hideCard(event) {
       }
     });
     
-    
+    // FIX: Show the start game button only after everyone has checked their roles
+    if (revealedPlayers.size === Object.keys(assignments).length) {
+       document.getElementById("startGameBtn").style.display = "flex";
+    }
   }
 }
 
@@ -295,12 +301,13 @@ function switchScreen(screenId) {
 }
 
 /* ===========================
-   REVEAL PLAYER
+   REVEAL WINNER
 =========================== */
 function revealWinner() {
   const playerNames = Object.keys(assignments);
-  const randomPlayer = playerNames[Math.floor(Math.random() * playerNames.length)];
-  const data = assignments[randomPlayer];
+  
+  // FIX: Properly finds the spy/spies rather than just choosing a random player
+  const spies = playerNames.filter(p => assignments[p].role === "Spy");
   
   const card = document.getElementById("card");
   card.style.display = "block";
@@ -312,31 +319,18 @@ function revealWinner() {
   card.style.maxWidth = "432px";
   card.style.width = "calc(100% - 48px)";
 
-  const isSpy = data.role === "Spy";
-
-  if (isSpy) {
-    card.innerHTML = `
-      <div class="card-header">
-        <h3>Classification</h3>
-        <button class="card-close" onclick="hideRevealCard()">✕</button>
-      </div>
-      <h2 style="color:#e05544;font-family:var(--font-body);font-weight:700;letter-spacing:1px;text-transform:uppercase;">— Spy —</h2>
-      <p>${randomPlayer}</p>
-      <hr>
-      <small>Location was: <strong>${currentLocation}</strong></small>
-    `;
-  } else {
-    card.innerHTML = `
-      <div class="card-header">
-        <h3>Location</h3>
-        <button class="card-close" onclick="hideRevealCard()">✕</button>
-      </div>
-      <h2>${data.location}</h2>
-      <p>${data.role}</p>
-      <hr>
-      <small><strong>${randomPlayer}</strong>'s assignment</small>
-    `;
-  }
+  card.innerHTML = `
+    <div class="card-header">
+      <h3>Game Over</h3>
+      <button class="card-close" onclick="hideRevealCard()">✕</button>
+    </div>
+    <h2 style="color:#e05544;font-family:var(--font-body);font-weight:700;letter-spacing:1px;text-transform:uppercase;">
+      ${spies.length > 1 ? '— SPIES —' : '— SPY —'}
+    </h2>
+    <p>${spies.join(', ')}</p>
+    <hr>
+    <small>Location was: <strong>${currentLocation}</strong></small>
+  `;
 }
 
 function hideRevealCard() {
