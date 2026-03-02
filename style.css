@@ -110,12 +110,18 @@ body::after {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-top: max(env(safe-area-inset-top), 20px);
   padding-bottom: max(env(safe-area-inset-bottom), 20px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 350ms var(--ease-out);
   z-index: 1;
+}
+
+/* Setup screen fits in viewport without scrolling */
+#setupScreen {
+  justify-content: center;
+  overflow: hidden;
 }
 
 .screen.active {
@@ -131,10 +137,6 @@ body::after {
 .screen.active > *:nth-child(2) { animation-delay: 90ms;  }
 .screen.active > *:nth-child(3) { animation-delay: 150ms; }
 .screen.active > *:nth-child(4) { animation-delay: 210ms; }
-.screen.active > *:nth-child(5) { animation-delay: 270ms; }
-.screen.active > *:nth-child(6) { animation-delay: 330ms; }
-.screen.active > *:nth-child(7) { animation-delay: 390ms; }
-.screen.active > *:nth-child(8) { animation-delay: 450ms; }
 
 @keyframes fadeRise {
   from { opacity: 0; transform: translateY(20px); }
@@ -201,7 +203,8 @@ label {
 
 /* App wordmark */
 #setupScreen h1 {
-  padding-top: 56px;
+  padding-top: 20px;
+  padding-bottom: 4px;
   position: relative;
 }
 
@@ -212,14 +215,14 @@ label {
   width: 36px;
   height: 1.5px;
   background: linear-gradient(90deg, var(--gold), rgba(201,169,110,0.2));
-  margin-top: 12px;
+  margin-top: 6px;
   border-radius: 1px;
 }
 
 #setupScreen > p {
-  padding-top: 12px;
-  padding-bottom: 36px;
-  font-size: 14px;
+  padding-top: 4px;
+  padding-bottom: 16px;
+  font-size: 12px;
   font-style: italic;
   letter-spacing: 0.15px;
 }
@@ -230,7 +233,7 @@ label {
   max-width: 480px;
   padding-left: 24px;
   padding-right: 24px;
-  margin-bottom: 48px;
+  margin-bottom: 20px;
 }
 
 #settingsSection {
@@ -238,7 +241,7 @@ label {
   max-width: 480px;
   padding-left: 24px;
   padding-right: 24px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 /* ── Custom Timer Input ── */
@@ -272,7 +275,7 @@ select {
     border-color 200ms ease,
     background  200ms ease,
     box-shadow  200ms ease;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 input::placeholder {
@@ -312,9 +315,9 @@ select option {
 #playerNameInputs {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 0;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 #playerNameInputs input {
