@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Hide card and start button on load via JS (CSS handles visual state)
   document.getElementById("card").style.display = "none";
-  document.getElementById("startGameBtn").style.display = "none";
 });
 
 /* ===========================
