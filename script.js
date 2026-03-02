@@ -3,8 +3,12 @@
 =========================== */
 let assignments = {};
 let revealedPlayers = new Set();
-let timerMinutes = 5;
+let timerMinutes = 0;
 let timerInterval = null;
+let currentPlayers = [];
+let currentSpyCount = 0;
+let currentLocation = null;
+let gameStarted = false;
 
 /* ===========================
    INITIALIZE
@@ -22,10 +26,28 @@ document.addEventListener("DOMContentLoaded", () => {
   playerCountSelect.addEventListener("change", updateNameInputs);
   updateNameInputs();
 
+  // Timer select change handler
+  const timerSelect = document.getElementById("timerSelect");
+  timerSelect.addEventListener("change", updateTimerDisplay);
+
   // Hide card and start button on load via JS (CSS handles visual state)
   document.getElementById("card").style.display = "none";
   document.getElementById("startGameBtn").style.display = "none";
 });
+
+/* ===========================
+   UPDATE TIMER DISPLAY
+=========================== */
+function updateTimerDisplay() {
+  const timerSelect = document.getElementById("timerSelect");
+  const customTimerInput = document.getElementById("customTimerInput");
+  
+  if (timerSelect.value === "custom") {
+    customTimerInput.style.display = "block";
+  } else {
+    customTimerInput.style.display = "none";
+  }
+}
 
 /* ===========================
    UPDATE PLAYER NAME INPUTS
@@ -52,7 +74,19 @@ function startSetup() {
   const players = Array.from(playerInputs).map(input => input.value.trim()).filter(Boolean);
 
   const spyCount = parseInt(document.getElementById("spyCount").value);
-  timerMinutes = parseInt(document.getElementById("timerSelect").value);
+  const timerSelect = document.getElementById("timerSelect");
+  
+  let selectedTimer = timerSelect.value;
+  if (selectedTimer === "custom") {
+    const customMinutes = parseInt(document.getElementById("customMinutes").value);
+    if (!customMinutes || customMinutes < 1 || customMinutes > 60) {
+      alert("Enter a valid custom time between 1 and 60 minutes.");
+      return;
+    }
+    timerMinutes = customMinutes;
+  } else {
+    timerMinutes = parseInt(selectedTimer);
+  }
 
   if (players.length < 3) {
     alert("Enter at least 3 player names.");
@@ -64,7 +98,12 @@ function startSetup() {
     return;
   }
 
+  // Save current game settings
+  currentPlayers = [...players];
+  currentSpyCount = spyCount;
+
   assignments = generateGame(players, spyCount);
+  currentLocation = Object.keys(assignments)[0] ? assignments[Object.keys(assignments)[0]].location : null;
   revealedPlayers.clear();
 
   showRevealScreen(players);
@@ -146,23 +185,35 @@ function revealCard(player, button) {
 
   if (isSpy) {
     card.innerHTML = `
-      <h3>Classification</h3>
+      <div class="card-header">
+        <h3>Classification</h3>
+        <button class="card-close" onclick="hideCard(event)">✕</button>
+      </div>
       <h2 style="color:#e05544;font-family:var(--font-body);font-weight:700;letter-spacing:1px;text-transform:uppercase;">— Spy —</h2>
       <p>Deduce the location.<br>Don't get caught.</p>
       <hr>
-      <small>Memorise this. Tap to hide.</small>
+      <small>Memorise this. Click the card or the X to hide, then pass the phone.</small>
     `;
   } else {
     card.innerHTML = `
-      <h3>Location</h3>
+      <div class="card-header">
+        <h3>Location</h3>
+        <button class="card-close" onclick="hideCard(event)">✕</button>
+      </div>
       <h2>${data.location}</h2>
       <p>${data.role}</p>
       <hr>
-      <small>Memorise this. Tap to hide.</small>
+      <small>Memorise this. Click the card or the X to hide, then pass the phone.</small>
     `;
   }
 
-  card.onclick = () => {
+  card.onclick = (e) => {
+    if (e.target === card || e.target.tagName === 'SMALL' || e.target.tagName === 'P' || e.target.tagName === 'H2' || e.target.tagName === 'HR') {
+      hideCardAction();
+    }
+  };
+
+  function hideCardAction() {
     card.style.display = "none";
     card.onclick = null;
     revealedPlayers.add(player);
@@ -173,7 +224,30 @@ function revealCard(player, button) {
     if (revealedPlayers.size === Object.keys(assignments).length) {
       document.getElementById("startGameBtn").style.display = "flex";
     }
-  };
+  }
+}
+
+/* ===========================
+   HIDE CARD
+=========================== */
+function hideCard(event) {
+  event.stopPropagation();
+  const card = document.getElementById("card");
+  card.style.display = "none";
+  
+  // Mark all remaining players as revealed so we can't view cards again
+  const buttons = document.querySelectorAll("#playerButtons button");
+  buttons.forEach(button => {
+    if (!button.disabled) {
+      revealedPlayers.add(button.textContent);
+      button.disabled = true;
+      button.style.opacity = "0.35";
+    }
+  });
+
+  if (revealedPlayers.size === Object.keys(assignments).length) {
+    document.getElementById("startGameBtn").style.display = "flex";
+  }
 }
 
 /* ===========================
@@ -181,7 +255,17 @@ function revealCard(player, button) {
 =========================== */
 function startGame() {
   switchScreen("gameScreen");
-  startTimer(timerMinutes);
+  gameStarted = true;
+  document.getElementById("gameActions").style.display = "none";
+  
+  if (timerMinutes > 0) {
+    startTimer(timerMinutes);
+  } else {
+    const display = document.getElementById("timerDisplay");
+    display.textContent = "No Timer";
+    display.style.background = "none";
+    display.style.color = "var(--text-muted)";
+  }
 }
 
 /* ===========================
@@ -209,6 +293,7 @@ function startTimer(minutes) {
       clearInterval(timerInterval);
       display.textContent = "Time's Up";
       display.classList.add("warning");
+      document.getElementById("gameActions").style.display = "flex";
       return;
     }
 
@@ -225,4 +310,94 @@ function startTimer(minutes) {
 function switchScreen(screenId) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(screenId).classList.add("active");
+}
+
+/* ===========================
+   REVEAL PLAYER
+=========================== */
+function revealWinner() {
+  const playerNames = Object.keys(assignments);
+  const randomPlayer = playerNames[Math.floor(Math.random() * playerNames.length)];
+  const data = assignments[randomPlayer];
+  
+  const card = document.getElementById("card");
+  card.style.display = "block";
+  card.style.position = "fixed";
+  card.style.zIndex = "9999";
+  card.style.inset = "50%";
+  card.style.transform = "translate(-50%, -50%)";
+  card.style.margin = "0";
+  card.style.maxWidth = "432px";
+  card.style.width = "calc(100% - 48px)";
+
+  const isSpy = data.role === "Spy";
+
+  if (isSpy) {
+    card.innerHTML = `
+      <div class="card-header">
+        <h3>Classification</h3>
+        <button class="card-close" onclick="hideRevealCard()">✕</button>
+      </div>
+      <h2 style="color:#e05544;font-family:var(--font-body);font-weight:700;letter-spacing:1px;text-transform:uppercase;">— Spy —</h2>
+      <p>${randomPlayer}</p>
+      <hr>
+      <small>Location was: <strong>${currentLocation}</strong></small>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="card-header">
+        <h3>Location</h3>
+        <button class="card-close" onclick="hideRevealCard()">✕</button>
+      </div>
+      <h2>${data.location}</h2>
+      <p>${data.role}</p>
+      <hr>
+      <small><strong>${randomPlayer}</strong>'s assignment</small>
+    `;
+  }
+}
+
+function hideRevealCard() {
+  const card = document.getElementById("card");
+  card.style.display = "none";
+  card.style.position = "";
+  card.style.zIndex = "";
+  card.style.inset = "";
+  card.style.transform = "";
+  card.style.margin = "";
+}
+
+/* ===========================
+   NEW GAME
+=========================== */
+function goToNewGame() {
+  // Clear the reveal screen
+  if (timerInterval) clearInterval(timerInterval);
+  
+  // Populate setup screen with saved values
+  document.getElementById("playerCount").value = currentPlayers.length;
+  updateNameInputs();
+  
+  // Fill in player names
+  const inputs = document.querySelectorAll("#playerNameInputs input");
+  inputs.forEach((input, index) => {
+    if (index < currentPlayers.length) {
+      input.value = currentPlayers[index];
+    }
+  });
+  
+  // Set spy count
+  document.getElementById("spyCount").value = currentSpyCount;
+  
+  // Reset timer select to no timer
+  document.getElementById("timerSelect").value = "0";
+  document.getElementById("customTimerInput").style.display = "none";
+  
+  // Reset game state
+  gameStarted = false;
+  revealedPlayers.clear();
+  assignments = {};
+  
+  // Go back to setup screen
+  switchScreen("setupScreen");
 }
