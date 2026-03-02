@@ -207,24 +207,14 @@ function revealCard(player, button) {
     `;
   }
 
+  // Store current player in a data attribute for hideCard to find
+  card.dataset.currentPlayer = player;
+
   card.onclick = (e) => {
     if (e.target === card || e.target.tagName === 'SMALL' || e.target.tagName === 'P' || e.target.tagName === 'H2' || e.target.tagName === 'HR') {
-      hideCardAction();
+      hideCard(e);
     }
   };
-
-  function hideCardAction() {
-    card.style.display = "none";
-    card.onclick = null;
-    revealedPlayers.add(player);
-
-    button.disabled = true;
-    button.style.opacity = "0.35";
-
-    if (revealedPlayers.size === Object.keys(assignments).length) {
-      document.getElementById("startGameBtn").style.display = "flex";
-    }
-  }
 }
 
 /* ===========================
@@ -233,20 +223,25 @@ function revealCard(player, button) {
 function hideCard(event) {
   event.stopPropagation();
   const card = document.getElementById("card");
-  card.style.display = "none";
+  const currentPlayer = card.dataset.currentPlayer;
   
-  // Mark all remaining players as revealed so we can't view cards again
-  const buttons = document.querySelectorAll("#playerButtons button");
-  buttons.forEach(button => {
-    if (!button.disabled) {
-      revealedPlayers.add(button.textContent);
-      button.disabled = true;
-      button.style.opacity = "0.35";
+  if (currentPlayer && !revealedPlayers.has(currentPlayer)) {
+    card.style.display = "none";
+    revealedPlayers.add(currentPlayer);
+    
+    // Find and disable the button for this player
+    const buttons = document.querySelectorAll("#playerButtons button");
+    buttons.forEach(button => {
+      if (button.textContent === currentPlayer) {
+        button.disabled = true;
+        button.style.opacity = "0.35";
+      }
+    });
+    
+    // Only show start button if ALL players have revealed
+    if (revealedPlayers.size === Object.keys(assignments).length) {
+      document.getElementById("startGameBtn").style.display = "flex";
     }
-  });
-
-  if (revealedPlayers.size === Object.keys(assignments).length) {
-    document.getElementById("startGameBtn").style.display = "flex";
   }
 }
 
