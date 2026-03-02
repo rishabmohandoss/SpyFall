@@ -224,6 +224,28 @@ label {
   letter-spacing: 0.15px;
 }
 
+/* ── Player and Settings Sections ── */
+#playerSection {
+  width: 100%;
+  max-width: 480px;
+  padding-left: 24px;
+  padding-right: 24px;
+  margin-bottom: 48px;
+}
+
+#settingsSection {
+  width: 100%;
+  max-width: 480px;
+  padding-left: 24px;
+  padding-right: 24px;
+  margin-bottom: 16px;
+}
+
+/* ── Custom Timer Input ── */
+#customTimerInput {
+  margin-top: 10px;
+}
+
 /* ── Section label spacing ── */
 .section-label {
   padding-bottom: 0;
@@ -250,6 +272,7 @@ select {
     border-color 200ms ease,
     background  200ms ease,
     box-shadow  200ms ease;
+  margin-bottom: 10px;
 }
 
 input::placeholder {
@@ -290,7 +313,12 @@ select option {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  margin-top: 10px;
+}
+
+#playerNameInputs input {
+  margin-bottom: 0;
 }
 
 /* ── Buttons — base ── */
@@ -348,6 +376,8 @@ button:active       { transform: scale(0.97); }
     0 1px 0 rgba(255,255,255,0.12) inset,
     0 -1px 0 rgba(0,0,0,0.2) inset;
   margin-top: 8px;
+  width: 100%;
+  max-width: 480px;
 }
 
 #startGameBtn:hover {
@@ -502,6 +532,7 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
     0 12px 40px rgba(0,0,0,0.6),
     0 32px 80px rgba(0,0,0,0.5);
   animation: cardIn 560ms var(--ease-out) both;
+  cursor: pointer;
 }
 
 @keyframes cardIn {
@@ -557,12 +588,41 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   z-index: 2;
 }
 
-#card h3 {
+/* Card header with close button */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 30px 28px 0;
+}
+
+.card-header h3 {
+  padding: 0;
+  margin: 0;
   color: var(--gold);
   opacity: 0.65;
   font-size: 9px;
   letter-spacing: 3px;
+}
+
+.card-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+  width: auto;
+  height: auto;
+  transition: color 200ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.card-close:hover {
+  color: var(--gold);
 }
 
 #card h2 {
