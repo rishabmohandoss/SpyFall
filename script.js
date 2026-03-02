@@ -153,6 +153,10 @@ function shuffle(array) {
 function showRevealScreen(players) {
   switchScreen("revealScreen");
 
+  const startBtn = document.getElementById("startGameBtn");
+  startBtn.style.display = "flex"; // <--- CHANGE TO FLEX
+
+
   const container = document.getElementById("playerButtons");
   container.innerHTML = "";
 
