@@ -45,6 +45,7 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 0;
+overflow-y: auto;}
   overflow-y: auto;
   overflow-x: hidden; /* Prevent horizontal wobble */
 }
@@ -64,6 +65,7 @@ body {
 /* Atmospheric radial glows */
 body::before {
   content: '';
+  position: relative;
   position: fixed; /* Changed to fixed so it stays over the Spline scene on scroll */
   inset: 0;
   background:
@@ -89,6 +91,20 @@ body::after {
   animation: grain 8s steps(10) infinite;
 }
 
+@keyframes grain {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-3%, -4%); }
+  20%  { transform: translate(4%, 2%); }
+  30%  { transform: translate(-2%, 5%); }
+  40%  { transform: translate(5%, -3%); }
+  50%  { transform: translate(-4%, 4%); }
+  60%  { transform: translate(2%, -5%); }
+  70%  { transform: translate(-5%, 2%); }
+  80%  { transform: translate(3%, 5%); }
+  90%  { transform: translate(-2%, -3%); }
+  100% { transform: translate(0, 0); }
+}
+
 /* ── Screens ── */
 .screen {
   position: fixed;
@@ -96,13 +112,16 @@ body::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  
+
+  /* THIS PART ALLOWS SCROLLING */
   /* SCROLLING */
   overflow-y: auto; 
   overflow-x: hidden;
+  justify-content: flex-start; /* Change from center to flex-start */
   justify-content: flex-start; 
-  
+
   -webkit-overflow-scrolling: touch;
+  padding-top: max(env(safe-area-inset-top), 40px); /* Increased for breathing room */
   padding-top: max(env(safe-area-inset-top), 40px); 
   padding-bottom: max(env(safe-area-inset-bottom), 40px);
   opacity: 0;
@@ -111,16 +130,13 @@ body::after {
   z-index: 1;
 }
 
+/* Ensure setup screen allows content to start from top */
 #setupScreen {
   justify-content: flex-start;
-  overflow-y: auto;.screen.active {
-  opacity: 1;
-  /* Let mouse movements pass through the empty spaces of the screen */
-  pointer-events: none; 
+  overflow-y: auto;
 }
-
-/* Make sure the actual UI elements can still be clicked/typed in */
-.screen.active > * {
+.screen.active {
+  opacity: 1;
   pointer-events: auto;
 }
 
@@ -192,12 +208,18 @@ label {
 }
 
 /* ── Setup Screen header ── */
+#setupScreen {
+  justify-content: flex-start;
+}
+
+/* App wordmark */
 #setupScreen h1 {
   padding-top: 20px;
   padding-bottom: 4px;
   position: relative;
 }
 
+/* Gold rule beneath title */
 #setupScreen h1::after {
   content: '';
   display: block;
@@ -217,6 +239,7 @@ label {
 }
 
 /* ── Player and Settings Sections ── */
+#playerSection {
 #playerSection, #settingsSection {
   width: 100%;
   max-width: 480px;
@@ -225,14 +248,35 @@ label {
   margin-bottom: 20px;
 }
 
+#settingsSection {
+  width: 100%;
+  max-width: 480px;
+  padding-left: 24px;
+  padding-right: 24px;
+  margin-bottom: 12px;
+}
+
+/* ── Custom Timer Input ── */
+#customTimerInput {
+  margin-top: 10px;
+}
+
+/* ── Section label spacing ── */
+.section-label {
+  padding-bottom: 0;
+  margin-bottom: 10px;
+}
 #customTimerInput { margin-top: 10px; }
 .section-label { padding-bottom: 0; margin-bottom: 10px; }
 
 /* ── Inputs & Selects ── */
+input,
+select {
 input, select {
   width: 100%;
   height: 54px;
   padding: 0 18px;
+  background: var(--surface);
   /* Made surfaces slightly translucent to see the 3D background behind inputs */
   background: rgba(17, 17, 21, 0.85); 
   backdrop-filter: blur(8px);
@@ -246,14 +290,27 @@ input, select {
   outline: none;
   appearance: none;
   -webkit-appearance: none;
+  transition:
+    border-color 200ms ease,
+    background  200ms ease,
+    box-shadow  200ms ease;
   transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
   margin-bottom: 8px;
 }
 
+input::placeholder {
+  color: var(--text-dim);
+  font-weight: 300;
+}
 input::placeholder { color: var(--text-dim); font-weight: 300; }
 
+input:focus {
 input:focus, select:focus {
   border-color: rgba(201,169,110,0.35);
+  background: var(--surface-2);
+  box-shadow:
+    0 0 0 3px rgba(201,169,110,0.07),
+    0 2px 12px rgba(0,0,0,0.35);
   background: rgba(23, 23, 29, 0.95);
   box-shadow: 0 0 0 3px rgba(201,169,110,0.07), 0 2px 12px rgba(0,0,0,0.35);
 }
@@ -264,10 +321,22 @@ select {
   background-position: right 18px center;
   padding-right: 44px;
   cursor: pointer;
+  color: var(--text);
 }
 
+select:focus {
+  border-color: rgba(201,169,110,0.35);
+  background-color: var(--surface-2);
+  box-shadow: 0 0 0 3px rgba(201,169,110,0.07);
+}
+
+select option {
+  background: #1a1a22;
+  color: var(--text);
+}
 select option { background: #1a1a22; color: var(--text); }
 
+/* ── Player name inputs ── */
 #playerNameInputs {
   display: flex;
   flex-direction: column;
@@ -277,6 +346,11 @@ select option { background: #1a1a22; color: var(--text); }
 }
 #playerNameInputs input { margin-bottom: 0; }
 
+#playerNameInputs input {
+  margin-bottom: 0;
+}
+
+/* ── Buttons — base ── */
 /* ── Buttons ── */
 button {
   display: flex;
@@ -294,35 +368,53 @@ button {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  transition:
+    background    200ms ease,
+    border-color  200ms ease,
+    box-shadow    200ms ease,
+    transform     120ms ease,
+    opacity       200ms ease;
   transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease, transform 120ms ease, opacity 200ms ease;
   -webkit-user-select: none;
   user-select: none;
 }
 
+/* Sweep shimmer */
 button::after {
   content: '';
   position: absolute;
+  top: 0; bottom: 0;
+  left: -100%;
   top: 0; bottom: 0; left: -100%;
   width: 60%;
   background: linear-gradient(105deg, transparent, rgba(255,255,255,0.06), transparent);
   transition: left 500ms ease;
   pointer-events: none;
 }
+
 button:hover::after { left: 160%; }
 button:active       { transform: scale(0.97); }
 
+/* ── Primary CTA — gold ── */
 /* ── Primary CTA ── */
 #startGameBtn {
   background: linear-gradient(135deg, #c9a96e 0%, #a07840 100%);
   color: #1c1208;
+   
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
+  box-shadow:
+    0 4px 24px rgba(201,169,110,0.28),
+    0 1px 0 rgba(255,255,255,0.12) inset,
+    0 -1px 0 rgba(0,0,0,0.2) inset;
   box-shadow: 0 4px 24px rgba(201,169,110,0.28), 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.2) inset;
   display: flex !important; 
+  flex-shrink: 0;        /* IMPORTANT: Stops the button from squishing */
   flex-shrink: 0;
   margin-top: 20px;
+  margin-bottom: 40px;   /* Adds space at the bottom of the scroll */
   margin-bottom: 40px;
   width: 100%;
   max-width: 480px;
@@ -330,45 +422,84 @@ button:active       { transform: scale(0.97); }
 
 #startGameBtn:hover {
   background: linear-gradient(135deg, #d4b47a 0%, #ab8348 100%);
+  box-shadow:
+    0 6px 32px rgba(201,169,110,0.4),
+    0 1px 0 rgba(255,255,255,0.12) inset;
   box-shadow: 0 6px 32px rgba(201,169,110,0.4), 0 1px 0 rgba(255,255,255,0.12) inset;
 }
 
+
 /* ── Secondary / utility buttons ── */
 button:not(#startGameBtn):not(#playerButtons button) {
+  background: var(--surface-2);
   background: rgba(23, 23, 29, 0.85); /* Slightly transparent */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--text);
   border: 1px solid var(--border);
 }
+
 button:not(#startGameBtn):not(#playerButtons button):hover {
   background: var(--surface-3);
   border-color: var(--border-bright);
   box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
+
 button:not(#startGameBtn):not(#playerButtons button):disabled {
   opacity: 0.3;
   pointer-events: none;
 }
 
 /* ── Reveal Screen ── */
+#revealScreen {
+  justify-content: flex-start;
+}
+
+#revealScreen h1 {
+  padding-top: 52px;
+  text-align: center;
+  padding-bottom: 6px;
+}
+
+#revealScreen p {
+  text-align: center;
+  font-size: 14px;
+  font-style: italic;
+  padding-bottom: 32px;
+}
 #revealScreen h1 { padding-top: 52px; text-align: center; padding-bottom: 6px; }
 #revealScreen p { text-align: center; font-size: 14px; font-style: italic; padding-bottom: 32px; }
 
 /* ── Player Buttons ── */
+#playerButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
 #playerButtons { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 480px; padding-left: 24px; padding-right: 24px; }
 #playerButtons button {
   background: var(--surface);
   color: var(--white);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   height: 64px;
+  font-family: var(--font-body);
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 0.1px;
   text-align: left;
   padding: 0 22px 0 20px;
+  position: relative;
+  overflow: hidden;
   justify-content: space-between;
 }
+
+/* Left gold strip */
 #playerButtons button::before {
   content: '';
   position: absolute;
@@ -379,10 +510,45 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   opacity: 0;
   transition: opacity 200ms ease, top 200ms ease, bottom 200ms ease;
 }
+
+/* Arrow indicator */
 #playerButtons button::after {
+  content: '→';
+  font-size: 14px;
+  color: var(--text-dim);
+  transition: color 200ms ease, transform 200ms ease;
+  background: none;
+  width: auto;
+  height: auto;
+  position: static;
+  left: auto;
+  transform: none;
+  opacity: 1;
   content: '→'; font-size: 14px; color: var(--text-dim); transition: color 200ms ease, transform 200ms ease; opacity: 1;
 }
+
 #playerButtons button:hover {
+  background: var(--surface-2);
+  border-color: rgba(201,169,110,0.18);
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.45),
+    inset 0 0 30px rgba(201,169,110,0.025);
+}
+
+#playerButtons button:hover::before {
+  opacity: 1;
+  top: 10%;
+  bottom: 10%;
+}
+
+#playerButtons button:hover::after {
+  color: var(--gold);
+  transform: translateX(3px);
+}
+
+#playerButtons button:active {
+  transform: scale(0.975);
+  background: var(--surface-3);
   background: var(--surface-2); border-color: rgba(201,169,110,0.18);
   box-shadow: 0 4px 24px rgba(0,0,0,0.45), inset 0 0 30px rgba(201,169,110,0.025);
 }
@@ -392,26 +558,186 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
 
 /* ── Card ── */
 #card {
+  width: calc(100% - 48px);
+  max-width: 432px;
+  margin: 0 auto 28px;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 2px 4px rgba(0,0,0,0.3),
+    0 12px 40px rgba(0,0,0,0.6),
+    0 32px 80px rgba(0,0,0,0.5);
+  animation: cardIn 560ms var(--ease-out) both;
+  cursor: pointer;
   width: calc(100% - 48px); max-width: 432px; margin: 0 auto 28px;
   background: var(--surface); border-radius: var(--radius-xl); padding: 0;
   position: relative; overflow: hidden;
   box-shadow: 0 0 0 1px var(--border), 0 2px 4px rgba(0,0,0,0.3), 0 12px 40px rgba(0,0,0,0.6), 0 32px 80px rgba(0,0,0,0.5);
   animation: cardIn 560ms var(--ease-out) both; cursor: pointer;
 }
+
 @keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.94);
+    box-shadow: 0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.2);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 2px 4px rgba(0,0,0,0.3),
+      0 12px 40px rgba(0,0,0,0.6),
+      0 32px 80px rgba(0,0,0,0.5);
+  }
+}
+
+/* Card ambient glow */
   from { opacity: 0; transform: translateY(32px) scale(0.94); box-shadow: 0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.2); }
   to   { opacity: 1; transform: translateY(0) scale(1); box-shadow: 0 0 0 1px var(--border), 0 2px 4px rgba(0,0,0,0.3), 0 12px 40px rgba(0,0,0,0.6), 0 32px 80px rgba(0,0,0,0.5); }
 }
 #card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 100% 50% at 50% 0%, rgba(201,169,110,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 50% 110%, rgba(0,0,0,0.25) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
   content: ''; position: absolute; inset: 0;
   background: radial-gradient(ellipse 100% 50% at 50% 0%, rgba(201,169,110,0.09) 0%, transparent 65%), radial-gradient(ellipse 70% 40% at 50% 110%, rgba(0,0,0,0.25) 0%, transparent 100%);
   pointer-events: none; z-index: 0;
 }
+
+/* Gold top border */
 #card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 5%,
+    rgba(201,169,110,0.4) 20%,
+    var(--gold) 40%,
+    rgba(201,169,110,0.9) 50%,
+    var(--gold) 60%,
+    rgba(201,169,110,0.4) 80%,
+    transparent 95%
+  );
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent 5%, rgba(201,169,110,0.4) 20%, var(--gold) 40%, rgba(201,169,110,0.9) 50%, var(--gold) 60%, rgba(201,169,110,0.4) 80%, transparent 95%);
   z-index: 1;
 }
+
+/* All card children sit above pseudos */
+#card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Card header with close button */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 28px 0;
+}
+
+.card-header h3 {
+  padding: 0;
+  margin: 0;
+  color: var(--gold);
+  opacity: 0.65;
+  font-size: 9px;
+  letter-spacing: 3px;
+}
+
+.card-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+  width: auto;
+  height: auto;
+  transition: color 200ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.card-close:hover {
+  color: var(--gold);
+}
+
+#card h2 {
+  padding: 16px 28px 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 6.5vw, 30px);
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+}
+
+#card p {
+  padding: 10px 28px 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Hairline separator inside card */
+#card hr,
+#card .card-divider {
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+  border: none;
+  margin: 24px 28px;
+}
+
+#card small {
+  display: block;
+  padding: 0 28px 30px;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+
+/* ── Game Screen ── */
+#gameScreen {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#gameScreen > * {
+  text-align: center;
+}
+
+#gameScreen h1 {
+  font-family: var(--font-display);
+  margin-bottom: 10px;
+}
+
+#gameScreen p {
+  font-size: 14px;
+  font-style: italic;
+  margin-bottom: 0;
+}
+
+/* ── Timer ── */
 #card > * { position: relative; z-index: 2; }
 .card-header { display: flex; justify-content: space-between; align-items: center; padding: 30px 28px 0; }
 .card-header h3 { padding: 0; margin: 0; color: var(--gold); opacity: 0.65; font-size: 9px; letter-spacing: 3px; }
@@ -428,6 +754,31 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
 #gameScreen h1 { font-family: var(--font-display); margin-bottom: 10px; }
 #gameScreen p { font-size: 14px; font-style: italic; margin-bottom: 0; }
 #timerDisplay {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  padding: 12px 24px;
+  margin: 18px auto 40px;
+  text-align: center;
+
+  font-family: var(--font-mono);
+  font-size: clamp(80px, 24vw, 116px);
+  font-weight: 200;
+  letter-spacing: -5px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+
+  /* Gradient metallic text */
+  background: linear-gradient(
+    175deg,
+    var(--white)  0%,
+    rgba(215,215,228,0.85) 50%,
+    rgba(150,150,168,0.6) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
   display: block; width: 100%; max-width: 480px; padding: 12px 24px; margin: 18px auto 40px; text-align: center;
   font-family: var(--font-mono); font-size: clamp(80px, 24vw, 116px); font-weight: 200; letter-spacing: -5px; line-height: 1; font-variant-numeric: tabular-nums;
   background: linear-gradient(175deg, var(--white) 0%, rgba(215,215,228,0.85) 50%, rgba(150,150,168,0.6) 100%);
@@ -438,18 +789,66 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
 @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
 #gameScreen button { max-width: 432px; margin: 0 auto 12px; }
 
+/* Glow blooms behind timer digits */
+#timerDisplay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 55% at 50% 60%, rgba(201,169,110,0.055) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Warning: urgent red */
+#timerDisplay.warning {
+  background: linear-gradient(175deg, #ff7060 0%, var(--red) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: urgentPulse 900ms ease-in-out infinite;
+}
+
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+/* ── Game screen actions ── */
+#gameScreen button {
+  max-width: 432px;
+  margin: 0 auto 12px;
+}
+
+/* ── Scrollbar ── */
 /* ── Scrollbar & Focus ── */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+}
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 :focus-visible { outline: 2px solid rgba(201,169,110,0.45); outline-offset: 2px; border-radius: var(--radius-sm); }
 
+/* ── Focus visible ── */
+:focus-visible {
+  outline: 2px solid rgba(201,169,110,0.45);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+
+/* ── Begin Session Button (Setup Screen) ── */
 /* ── Begin Session Button ── */
 #beginSessionBtn {
   background: linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%);
   color: var(--gold);
   border: 1px solid var(--gold-dim);
+  
+  /* POSITIONING FIXES */
   display: flex !important; 
+  margin-top: auto;         /* Pushes button to the bottom of the setup list */
+  margin-bottom: 40px;      /* Space from the very bottom of the screen */
+  flex-shrink: 0;           /* Prevents the button from being flattened */
+  
   margin-top: auto;
   margin-bottom: 40px;
   flex-shrink: 0;
@@ -462,17 +861,26 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
 }
 #beginSessionBtn:hover { background: var(--surface-3); border-color: var(--gold); color: var(--gold-light); box-shadow: 0 6px 20px rgba(201,169,110,0.1); }
 
+#beginSessionBtn:hover {
+  background: var(--surface-3);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 6px 20px rgba(201,169,110,0.1);
 
 /* ============================================
    3D SPLINE BACKGROUND
    ============================================ */
 spline-viewer {
-  position: fixed;
+  position: fixed; /* Locks it to the viewport */
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh;
-  z-index: -1;
-  /* Removed pointer-events: none so it can feel the mouse again */
+  height: 100dvh; /* Accounts for mobile browser bars */
+  z-index: -1;    /* Puts it completely behind your UI, but in front of body background */
+  
+  /* CRITICAL FOR MOBILE: 
+     Prevents the 3D scene from intercepting your thumb 
+     swipes so you can still scroll your setup screen freely. */
+  pointer-events: none; 
 }
