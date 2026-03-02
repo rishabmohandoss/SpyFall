@@ -14,24 +14,35 @@
     <h1>Spyfall</h1>
     <p>Enter players, choose settings, and begin.</p>
 
-    <label for="playerCount">Players</label>
-    <select id="playerCount"></select>
+    <div id="playerSection">
+      <label for="playerCount">Players</label>
+      <select id="playerCount"></select>
 
-    <label for="spyCount">Spies</label>
-    <select id="spyCount">
-      <option value="1">1 Spy</option>
-      <option value="2">2 Spies</option>
-    </select>
+      <label for="spyCount">Spies</label>
+      <select id="spyCount">
+        <option value="1">1 Spy</option>
+        <option value="2">2 Spies</option>
+      </select>
 
-    <label for="timerSelect">Timer</label>
-    <select id="timerSelect">
-      <option value="5">5 minutes</option>
-      <option value="8">8 minutes</option>
-      <option value="10">10 minutes</option>
-      <option value="15">15 minutes</option>
-    </select>
+      <div id="playerNameInputs"></div>
+    </div>
 
-    <div id="playerNameInputs"></div>
+    <div id="settingsSection">
+      <label for="timerSelect">Timer</label>
+      <select id="timerSelect">
+        <option value="0">No Timer</option>
+        <option value="5">5 minutes</option>
+        <option value="8">8 minutes</option>
+        <option value="10">10 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="custom">Custom Time</option>
+      </select>
+
+      <div id="customTimerInput" style="display: none;">
+        <label for="customMinutes">Custom Minutes</label>
+        <input type="number" id="customMinutes" placeholder="Enter minutes" min="1" max="60" value="5">
+      </div>
+    </div>
 
     <button onclick="startSetup()">Begin Session</button>
   </div>
@@ -50,6 +61,10 @@
     <h1>In Session</h1>
     <p>Question, deduce, and accuse.</p>
     <div id="timerDisplay"></div>
+    <div id="gameActions" style="display: none; flex-direction: column; gap: 12px; width: 100%; max-width: 480px; padding: 0 24px; margin-top: 32px;">
+      <button onclick="revealWinner()">Reveal Player</button>
+      <button onclick="goToNewGame()">New Game</button>
+    </div>
   </div>
 
   <script src="locations.js"></script>
