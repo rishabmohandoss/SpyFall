@@ -753,3 +753,31 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
+
+
+/* ── Begin Session Button (Setup Screen) ── */
+#beginSessionBtn {
+  background: linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%);
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  
+  /* POSITIONING FIXES */
+  display: flex !important; 
+  margin-top: auto;         /* Pushes button to the bottom of the setup list */
+  margin-bottom: 40px;      /* Space from the very bottom of the screen */
+  flex-shrink: 0;           /* Prevents the button from being flattened */
+  
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 432px;
+}
+
+#beginSessionBtn:hover {
+  background: var(--surface-3);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 6px 20px rgba(201,169,110,0.1);
+}
