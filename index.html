@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spyfall</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+.screen {
+  display: none;
+  padding: 20px;
+}
+
+.active {
+  display: block;
+}
+
+h1 {
+  margin-top: 10px;
+}
+
+button {
+  width: 90%;
+  padding: 18px;
+  margin: 10px auto;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  background: #222;
+  color: white;
+}
+
+button:active {
+  background: #444;
+}
+
+input, select {
+  width: 90%;
+  padding: 12px;
+  margin: 8px auto;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+#card {
+  margin-top: 40px;
+  padding: 30px;
+  background: #222;
+  border-radius: 15px;
+  font-size: 22px;
+}
+
+#timerDisplay {
+  font-size: 60px;
+  margin-top: 40px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen" class="screen active">
+  <h1>Spyfall Setup</h1>
+
+  <label>Number of Players</label>
+  <select id="playerCount"></select>
+
+  <label>Number of Spies</label>
+  <select id="spyCount">
+    <option value="1">1</option>
+    <option value="2">2</option>
+  </select>
+
+  <label>Game Timer (Minutes)</label>
+  <select id="timerSelect">
+    <option value="5">5</option>
+    <option value="8">8</option>
+    <option value="10">10</option>
+    <option value="15">15</option>
+  </select>
+
+  <div id="playerNameInputs"></div>
+
+  <button onclick="startSetup()">Start Setup</button>
+</div>
+
+<!-- REVEAL SCREEN -->
+<div id="revealScreen" class="screen">
+  <h1>Tap Your Name</h1>
+  <div id="playerButtons"></div>
+  <div id="card" style="display:none;"></div>
+  <button id="startGameBtn" style="display:none;" onclick="startGame()">Start Game</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen">
+  <h1>Game In Progress</h1>
+  <div id="timerDisplay"></div>
+</div>
+
+<script>
+/* ===========================
+   LOCATIONS
+=========================== */
+const LOCATIONS = {
+  "Beach": ["Lifeguard", "Surfer", "Tourist", "Ice Cream Vendor", "Photographer", "Fisherman"],
+  "Casino": ["Dealer", "Security", "Gambler", "Bartender", "Waitress", "Manager"],
+  "Space Station": ["Engineer", "Pilot", "Scientist", "Tourist", "Doctor", "Commander"],
+  "Movie Studio": ["Actor", "Director", "Producer", "Camera Operator", "Makeup Artist", "Stunt Double"]
+};
+
+/* ===========================
+   GLOBAL VARIABLES
+=========================== */
+let assignments = {};
+let revealed = new Set();
+let timerMinutes = 5;
+
+/* ===========================
+   INIT PLAYER COUNT DROPDOWN
+=========================== */
+const playerCountSelect = document.getElementById("playerCount");
+for (let i = 3; i <= 8; i++) {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = i;
+  playerCountSelect.appendChild(option);
+}
+
+playerCountSelect.addEventListener("change", updateNameInputs);
+updateNameInputs();
+
+/* ===========================
+   UPDATE NAME INPUTS
+=========================== */
+function updateNameInputs() {
+  const count = parseInt(playerCountSelect.value);
+  const container = document.getElementById("playerNameInputs");
+  container.innerHTML = "";
+
+  for (let i = 1; i <= count; i++) {
+    const input = document.createElement("input");
+    input.placeholder = "Player " + i;
+    input.value = "Player " + i;
+    container.appendChild(input);
+  }
+}
+
+/* ===========================
+   START SETUP
+=========================== */
+function startSetup() {
+  const playerInputs = document.querySelectorAll("#playerNameInputs input");
+  const players = Array.from(playerInputs).map(input => input.value.trim());
+
+  const spyCount = parseInt(document.getElementById("spyCount").value);
+  timerMinutes = parseInt(document.getElementById("timerSelect").value);
+
+  assignments = generateGame(players, spyCount);
+  revealed.clear();
+
+  showRevealScreen(players);
+}
+
+/* ===========================
+   GENERATE GAME
+=========================== */
+function generateGame(players, spyCount) {
+  const locationNames = Object.keys(LOCATIONS);
+  const chosenLocation = locationNames[Math.floor(Math.random() * locationNames.length)];
+
+  const roles = [...LOCATIONS[chosenLocation]];
+  shuffle(players);
+  shuffle(roles);
+
+  const result = {};
+
+  for (let i = 0; i < players.length; i++) {
+    if (i < spyCount) {
+      result[players[i]] = {
+        location: "???",
+        role: "Spy"
+      };
+    } else {
+      result[players[i]] = {
+        location: chosenLocation,
+        role: roles[i - spyCount]
+      };
+    }
+  }
+
+  return result;
+}
+
+/* ===========================
+   SHUFFLE FUNCTION
+=========================== */
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+/* ===========================
+   SHOW REVEAL SCREEN
+=========================== */
+function showRevealScreen(players) {
+  switchScreen("revealScreen");
+
+  const container = document.getElementById("playerButtons");
+  container.innerHTML = "";
+
+  players.forEach(player => {
+    const btn = document.createElement("button");
+    btn.textContent = player;
+    btn.onclick = () => revealCard(player, btn);
+    container.appendChild(btn);
+  });
+}
+
+/* ===========================
+   REVEAL CARD
+=========================== */
+function revealCard(player, button) {
+  if (revealed.has(player)) return;
+
+  const card = document.getElementById("card");
+  card.style.display = "block";
+  card.innerHTML = `
+    <h2>${player}</h2>
+    <p>Location: ${assignments[player].location}</p>
+    <p>Role: ${assignments[player].role}</p>
+    <p style="margin-top:20px;font-size:16px;">Tap to Hide</p>
+  `;
+
+  card.onclick = () => {
+    card.style.display = "none";
+    revealed.add(player);
+    button.disabled = true;
+    button.style.opacity = 0.5;
+
+    if (revealed.size === Object.keys(assignments).length) {
+      document.getElementById("startGameBtn").style.display = "block";
+    }
+  };
+}
+
+/* ===========================
+   START GAME
+=========================== */
+function startGame() {
+  switchScreen("gameScreen");
+  startTimer(timerMinutes);
+}
+
+/* ===========================
+   TIMER
+=========================== */
+function startTimer(minutes) {
+  let seconds = minutes * 60;
+
+  const display = document.getElementById("timerDisplay");
+
+  const interval = setInterval(() => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+
+    display.textContent = `${min}:${sec < 10 ? "0" : ""}${sec}`;
+
+    if (seconds <= 0) {
+      clearInterval(interval);
+      display.textContent = "Time's Up!";
+    }
+
+    seconds--;
+  }, 1000);
+}
+
+/* ===========================
+   SCREEN SWITCHER
+=========================== */
+function switchScreen(screenId) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
+}
+</script>
+
+</body>
+</html>
