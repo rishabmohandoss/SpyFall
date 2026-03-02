@@ -383,7 +383,10 @@ button:active       { transform: scale(0.97); }
     0 4px 24px rgba(201,169,110,0.28),
     0 1px 0 rgba(255,255,255,0.12) inset,
     0 -1px 0 rgba(0,0,0,0.2) inset;
-  margin-top: 8px;
+  display: flex !important; 
+  flex-shrink: 0;        /* IMPORTANT: Stops the button from squishing */
+  margin-top: 20px;
+  margin-bottom: 40px;   /* Adds space at the bottom of the scroll */
   width: 100%;
   max-width: 480px;
 }
