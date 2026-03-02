@@ -1,0 +1,442 @@
+/* ============================================
+   SPYFALL — style.css
+   Dark · Minimal · Mysterious · Mobile-First
+   ============================================ */
+
+/* ── Variables ── */
+:root {
+  --bg:           #0d0d0f;
+  --surface:      #17171c;
+  --surface-2:    #1f1f27;
+  --border:       #2a2a35;
+  --text:         #e8e8ee;
+  --text-muted:   #6b6b80;
+  --text-dim:     #3a3a48;
+  --accent:       #c0392b;
+  --accent-soft:  rgba(192, 57, 43, 0.15);
+  --accent-glow:  rgba(192, 57, 43, 0.08);
+  --white:        #ffffff;
+  --radius-sm:    10px;
+  --radius-md:    16px;
+  --radius-lg:    22px;
+  --transition:   200ms ease;
+  --font:         -apple-system, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --font-mono:    "SF Mono", "Fira Code", "Courier New", monospace;
+}
+
+/* ── Reset / Base ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font);
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Screens ── */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Screen inner wrapper ── */
+.screen > * {
+  width: 100%;
+  max-width: 480px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ── Typography ── */
+h1 {
+  font-size: clamp(26px, 7vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--white);
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+
+h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+p {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Setup Screen ── */
+#setupScreen {
+  justify-content: flex-start;
+}
+
+#setupScreen > * {
+  padding-top: 0;
+}
+
+/* Header block */
+#setupScreen h1 {
+  padding-top: 52px;
+  padding-bottom: 4px;
+}
+
+#setupScreen p {
+  padding-bottom: 32px;
+}
+
+/* ── Player Name Inputs ── */
+#playerNameInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#playerNameInputs input {
+  width: 100%;
+}
+
+/* ── Inputs & Selects ── */
+input,
+select {
+  width: 100%;
+  height: 54px;
+  padding: 0 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+input::placeholder {
+  color: var(--text-dim);
+}
+
+input:focus,
+select:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--surface-2);
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+select option {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Label for selects */
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── Buttons ── */
+button {
+  display: block;
+  width: 100%;
+  height: 56px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    opacity var(--transition),
+    transform 120ms ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Primary button */
+#startGameBtn,
+button[id$="Btn"]:not([disabled]) {
+  background: var(--accent);
+  color: var(--white);
+}
+
+#startGameBtn:hover,
+button[id$="Btn"]:not([disabled]):hover {
+  background: #d44235;
+}
+
+/* Disabled */
+button:disabled,
+button[disabled] {
+  background: var(--surface-2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
+/* ── Player Buttons (Reveal Screen) ── */
+#playerButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+#playerButtons button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 17px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  height: 60px;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform 120ms ease;
+}
+
+#playerButtons button:hover {
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+#playerButtons button:active {
+  transform: scale(0.97);
+  background: var(--surface-2);
+}
+
+/* ── Reveal Screen ── */
+#revealScreen {
+  justify-content: flex-start;
+  gap: 0;
+}
+
+#revealScreen h1 {
+  padding-top: 52px;
+  padding-bottom: 6px;
+  text-align: center;
+}
+
+#revealScreen p {
+  text-align: center;
+  padding-bottom: 32px;
+}
+
+/* ── Card (#card) ── */
+#card {
+  width: calc(100% - 48px);
+  max-width: 432px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 28px 32px;
+  text-align: center;
+  position: relative;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.3),
+    0 8px 24px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* Subtle top accent line */
+#card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+  opacity: 0.7;
+}
+
+/* Card label */
+#card h3 {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+/* Card location */
+#card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+/* Card role */
+#card p {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* Card tap instruction */
+#card small {
+  display: block;
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.4px;
+}
+
+/* ── Game Screen ── */
+#gameScreen {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+}
+
+#gameScreen h1 {
+  padding-top: 0;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+#gameScreen p {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* ── Timer ── */
+#timerDisplay {
+  font-family: var(--font-mono);
+  font-size: clamp(64px, 20vw, 96px);
+  font-weight: 300;
+  letter-spacing: -2px;
+  color: var(--white);
+  line-height: 1;
+  display: block;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  margin: 0 auto 48px;
+  tabular-nums: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Timer warning state — subtle red tint when low */
+#timerDisplay.warning {
+  color: var(--accent);
+}
+
+/* ── Game Screen buttons ── */
+#gameScreen button {
+  max-width: 432px;
+  margin: 0 auto 12px;
+}
+
+/* ── Dividers / Spacers ── */
+.divider {
+  width: 100%;
+  max-width: 480px;
+  height: 1px;
+  background: var(--border);
+  margin: 24px auto;
+  padding: 0;
+}
+
+/* ── Utility ── */
+.text-center { text-align: center; }
+
+/* ── Scrollbar (minimal, desktop) ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* ── Safe area padding for notched phones ── */
+.screen {
+  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+/* ── Focus visible for a11y ── */
+:focus-visible {
+  outline: 2px solid rgba(192, 57, 43, 0.6);
+  outline-offset: 2px;
+}
