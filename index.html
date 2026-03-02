@@ -1,24 +1,30 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spyfall</title>
+  <title>Spyfall | Classified Intelligence</title>
   <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.5/build/spline-viewer.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <!-- ── SETUP SCREEN ── -->
   <spline-viewer url="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"></spline-viewer>
+
   <div id="setupScreen" class="screen active">
     <h1>Spyfall</h1>
     <p>Enter players, choose settings, and begin.</p>
 
     <div id="playerSection">
-      <label for="playerCount">Players</label>
-      <select id="playerCount"></select>
+      <label for="playerCount">Number of Players</label>
+      <select id="playerCount">
+        <option value="3">3 Players</option>
+        <option value="4">4 Players</option>
+        <option value="5" selected>5 Players</option>
+        <option value="6">6 Players</option>
+        <option value="7">7 Players</option>
+        <option value="8">8 Players</option>
+      </select>
 
       <label for="spyCount">Spies</label>
       <select id="spyCount">
@@ -30,38 +36,46 @@
     </div>
 
     <div id="settingsSection">
-      <label for="timerSelect">Timer</label>
+      <label for="timerSelect">Game Timer</label>
       <select id="timerSelect">
         <option value="0">No Timer</option>
+        <option value="3">3 Minutes</option>
+        <option value="5" selected>5 Minutes</option>
+        <option value="8">8 Minutes</option>
         <option value="custom">Custom Time</option>
       </select>
 
       <div id="customTimerInput" style="display: none;">
-        <label for="customMinutes">Custom Minutes</label>
-        <input type="number" id="customMinutes" placeholder="Enter minutes" min="1" max="60" value="5">
+        <label for="customMinutes">Minutes</label>
+        <input type="number" id="customMinutes" placeholder="5" min="1" max="60" value="5">
       </div>
     </div>
 
     <button id="beginSessionBtn" onclick="startSetup()">Begin Session</button>
   </div>
 
-  <!-- ── REVEAL SCREEN ── -->
   <div id="revealScreen" class="screen">
     <h1>Tap Your Name</h1>
     <p>View your role privately, then pass the phone.</p>
+    
     <div id="playerButtons"></div>
-    <div id="card"></div>
-    <button id="startGameBtn" onclick="startGame()">Start Game</button>
+    
+    <div id="card" style="display: none;">
+      </div>
+
+    <button id="startGameBtn" style="display:none;" onclick="startGame()">Start Game</button>
   </div>
 
-  <!-- ── GAME SCREEN ── -->
   <div id="gameScreen" class="screen">
     <h1>In Session</h1>
     <p>Question, deduce, and accuse.</p>
-    <div id="timerDisplay"></div>
+    
+    <div id="timerDisplay">05:00</div>
+    
     <div id="gameActions" style="display: none; flex-direction: column; gap: 12px; width: 100%; max-width: 480px; padding: 0 24px; margin-top: 32px;">
-      <button onclick="revealWinner()">Reveal Player</button>
-      <button onclick="goToNewGame()">New Game</button>
+      <button id="pauseBtn" onclick="toggleTimer()">Pause Timer</button>
+      <button onclick="revealWinner()">End Mission</button>
+      <button onclick="location.reload()">New Game</button>
     </div>
   </div>
 
