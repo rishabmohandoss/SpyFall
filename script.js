@@ -159,9 +159,6 @@ function showRevealScreen(players) {
   const card = document.getElementById("card");
   card.style.display = "none";
 
-  const startBtn = document.getElementById("startGameBtn");
-  startBtn.style.display = "none";
-
   players.forEach(player => {
     const button = document.createElement("button");
     button.textContent = player;
@@ -237,10 +234,7 @@ function hideCard(event) {
       }
     });
     
-    // Only show start button if ALL players have revealed
-    if (revealedPlayers.size === Object.keys(assignments).length) {
-      document.getElementById("startGameBtn").style.display = "flex";
-    }
+    
   }
 }
 
