@@ -122,7 +122,7 @@ body::after {
 /* Setup screen fits in viewport without scrolling */
 #setupScreen {
   justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .screen.active {
