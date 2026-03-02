@@ -113,10 +113,14 @@ body::after {
 
 #setupScreen {
   justify-content: flex-start;
-  overflow-y: auto;
-}
-.screen.active {
+  overflow-y: auto;.screen.active {
   opacity: 1;
+  /* Let mouse movements pass through the empty spaces of the screen */
+  pointer-events: none; 
+}
+
+/* Make sure the actual UI elements can still be clicked/typed in */
+.screen.active > * {
   pointer-events: auto;
 }
 
@@ -463,16 +467,12 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
    3D SPLINE BACKGROUND
    ============================================ */
 spline-viewer {
-  position: fixed; /* Locks it to the viewport */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Accounts for mobile browser bars */
-  z-index: -1;    /* Puts it completely behind your UI, but in front of body background */
-  
-  /* CRITICAL FOR MOBILE: 
-     Prevents the 3D scene from intercepting your thumb 
-     swipes so you can still scroll your setup screen freely. */
-  pointer-events: none; 
+  height: 100dvh;
+  z-index: -1;
+  /* Removed pointer-events: none so it can feel the mouse again */
 }
