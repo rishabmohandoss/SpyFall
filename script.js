@@ -174,39 +174,29 @@ function showRevealScreen(players) {
 /* ===========================
    REVEAL CARD
 =========================== */
-function revealCard(player, button) {
-  if (revealedPlayers.has(player)) return;
+function revealCard(playerName) {
+  const card = document.getElementById('card');
+  const data = assignments[playerName]; // assignments is created in startSetup()
 
-  const data = assignments[player];
+  if (!data) return;
+
   const isSpy = data.role === "Spy";
-  const card = document.getElementById("card");
+
+  card.innerHTML = `
+    <div class="card-header">
+      <h3>${isSpy ? 'Classification' : 'Location'}</h3>
+      <button class="card-close" onclick="hideCard(event)">✕</button>
+    </div>
+    <h2>${isSpy ? '— SPY —' : data.location}</h2>
+    <p>${isSpy ? 'Identify the location without being caught.' : '<strong>Role:</strong> ' + data.role}</p>
+    <hr class="card-divider">
+    <small>Tap to hide, then pass the device.</small>
+  `;
 
   card.style.display = "block";
-
-  if (isSpy) {
-    card.innerHTML = `
-      <div class="card-header">
-        <h3>Classification</h3>
-        <button class="card-close" onclick="hideCard(event)">✕</button>
-      </div>
-      <h2 style="color:#e05544;font-family:var(--font-body);font-weight:700;letter-spacing:1px;text-transform:uppercase;">— Spy —</h2>
-      <p>Deduce the location.<br>Don't get caught.</p>
-      <hr>
-      <small>Memorise this. Click the card or the X to hide, then pass the phone.</small>
-    `;
-  } else {
-    card.innerHTML = `
-      <div class="card-header">
-        <h3>Location</h3>
-        <button class="card-close" onclick="hideCard(event)">✕</button>
-      </div>
-      <h2>${data.location}</h2>
-      <p>${data.role}</p>
-      <hr>
-      <small>Memorise this. Click the card or the X to hide, then pass the phone.</small>
-    `;
-  }
-
+  // Mark player as 'seen' if you want to dim their button
+  document.querySelector(`button[onclick*="${playerName}"]`).style.opacity = "0.5";
+}
   // Store current player in a data attribute for hideCard to find
   card.dataset.currentPlayer = player;
 
