@@ -41,12 +41,11 @@
 }
 
 html, body {
-  min-height: 100%; 
   width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal wobble */
+  overflow: hidden;
 }
 
 body {
@@ -64,7 +63,7 @@ body {
 /* Atmospheric radial glows */
 body::before {
   content: '';
-  position: fixed; /* Changed to fixed so it stays over the Spline scene on scroll */
+  position: fixed;
   inset: 0;
   background:
     radial-gradient(ellipse 90% 55% at 50% -5%, rgba(201,169,110,0.08) 0%, transparent 55%),
@@ -96,30 +95,24 @@ body::after {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   
-  /* SCROLLING */
-  overflow-y: auto; 
+  overflow-y: auto;
   overflow-x: hidden;
-  justify-content: flex-start; 
-  
   -webkit-overflow-scrolling: touch;
-  padding-top: max(env(safe-area-inset-top), 40px); 
+  
+  padding-top: max(env(safe-area-inset-top), 40px);
   padding-bottom: max(env(safe-area-inset-bottom), 40px);
+  
   opacity: 0;
   pointer-events: none;
   transition: opacity 350ms var(--ease-out);
   z-index: 1;
 }
 
-#setupScreen {
-  justify-content: flex-start;
-  overflow-y: auto;
-}
-
 .screen.active {
   opacity: 1;
-  /* Let mouse movements pass through the empty spaces of the screen */
-  pointer-events: none; 
+  pointer-events: auto;
 }
 
 /* Make sure the actual UI elements can still be clicked/typed in */
@@ -236,8 +229,7 @@ input, select {
   width: 100%;
   height: 54px;
   padding: 0 18px;
-  /* Made surfaces slightly translucent to see the 3D background behind inputs */
-  background: rgba(17, 17, 21, 0.85); 
+  background: rgba(17, 17, 21, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
@@ -323,7 +315,7 @@ button:active       { transform: scale(0.97); }
   letter-spacing: 2px;
   text-transform: uppercase;
   box-shadow: 0 4px 24px rgba(201,169,110,0.28), 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.2) inset;
-  display: flex !important; 
+  display: flex !important;
   flex-shrink: 0;
   margin-top: 20px;
   margin-bottom: 40px;
@@ -338,7 +330,7 @@ button:active       { transform: scale(0.97); }
 
 /* ── Secondary / utility buttons ── */
 button:not(#startGameBtn):not(#playerButtons button) {
-  background: rgba(23, 23, 29, 0.85); /* Slightly transparent */
+  background: rgba(23, 23, 29, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--text);
@@ -452,7 +444,7 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   background: linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%);
   color: var(--gold);
   border: 1px solid var(--gold-dim);
-  display: flex !important; 
+  display: flex !important;
   margin-top: auto;
   margin-bottom: 40px;
   flex-shrink: 0;
@@ -477,5 +469,4 @@ spline-viewer {
   height: 100vh;
   height: 100dvh;
   z-index: -1;
-  /* Removed pointer-events: none so it can feel the mouse again */
 }
