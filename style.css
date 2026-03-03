@@ -114,7 +114,7 @@ body::after {
 #setupScreen {
   justify-content: flex-start;
   overflow-y: auto;
-} /* <-- THIS IS THE BRACKET THAT WAS MISSING! */
+}
 
 .screen.active {
   opacity: 1;
@@ -437,7 +437,7 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative;
 }
 #timerDisplay::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 60%, rgba(201,169,110,0.055) 0%, transparent 70%); pointer-events: none; }
-#timerDisplay.warning { background: linear-gradient(175deg, #ff7060 0%, var(--red) 100%); -webkit-background-clip: text; background-clip: text; animation: urgentPulse 900ms ease-in-out infinite; }
+#timerDisplay.warning { background: linear-gradient(175deg, #ff7060 0%, var(--red) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: urgentPulse 900ms ease-in-out infinite; }
 @keyframes urgentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
 #gameScreen button { max-width: 432px; margin: 0 auto 12px; }
 
