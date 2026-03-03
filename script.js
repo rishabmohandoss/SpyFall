@@ -178,7 +178,10 @@ function showRevealScreen(players) {
   players.forEach(player => {
     const button = document.createElement("button");
     button.textContent = player;
-    button.onclick = () => revealCard(player, button);
+    button.onclick = (e) => {
+      e.stopPropagation();
+      revealCard(player, button);
+    };
     container.appendChild(button);
   });
 }
@@ -213,17 +216,34 @@ function revealCard(playerName, buttonElement) {
 
   card.dataset.currentPlayer = playerName;
 
-  card.onclick = (e) => {
-    // Only hide if clicking on the card background or specific elements
-    if (e.target === card || 
-        e.target.tagName === 'SMALL' || 
-        e.target.tagName === 'P' || 
-        e.target.tagName === 'H2' || 
-        e.target.tagName === 'HR' ||
-        e.target.classList.contains('card-divider')) {
-      hideCard(e);
-    }
-  };
+  // Remove any old event listeners by cloning
+  const newCard = card.cloneNode(true);
+  card.parentNode.replaceChild(newCard, card);
+  const updatedCard = document.getElementById("card");
+
+  // Add click handler to the new card element
+  updatedCard.addEventListener('click', (e) => {
+    handleCardClick(e, playerName);
+  });
+}
+
+/* ===========================
+   HANDLE CARD CLICK
+=========================== */
+function handleCardClick(e, playerName) {
+  e.stopPropagation();
+  
+  const card = document.getElementById('card');
+  
+  // Only hide if clicking on the card background or text elements
+  if (e.target === card || 
+      e.target.tagName === 'SMALL' || 
+      e.target.tagName === 'P' || 
+      e.target.tagName === 'H2' || 
+      e.target.tagName === 'HR' ||
+      e.target.classList.contains('card-divider')) {
+    hideCard(e);
+  }
 }
 
 /* ===========================
