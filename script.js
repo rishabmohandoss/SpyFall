@@ -4,7 +4,9 @@
 let assignments = {};
 let revealedPlayers = new Set();
 let timerMinutes = 0;
+let remainingSeconds = 0;
 let timerInterval = null;
+let timerPaused = false;
 let currentPlayers = [];
 let currentSpyCount = 0;
 let currentLocation = null;
@@ -70,31 +72,42 @@ function updateNameInputs() {
 =========================== */
 function startSetup() {
   const playerInputs = document.querySelectorAll("#playerNameInputs input");
-  const players = Array.from(playerInputs).map(input => input.value.trim()).filter(Boolean);
+  const players = Array.from(playerInputs)
+    .map(input => input.value.trim())
+    .filter(Boolean);
 
   const spyCount = parseInt(document.getElementById("spyCount").value);
   const timerSelect = document.getElementById("timerSelect");
   
-  let selectedTimer = timerSelect.value;
-  if (selectedTimer === "custom") {
-    const customMinutes = parseInt(document.getElementById("customMinutes").value);
-    if (!customMinutes || customMinutes < 1 || customMinutes > 60) {
-      alert("Enter a valid custom time between 1 and 60 minutes.");
-      return;
-    }
-    timerMinutes = customMinutes;
-  } else {
-    timerMinutes = parseInt(selectedTimer);
-  }
-
+  // Validate at least 3 players
   if (players.length < 3) {
     alert("Enter at least 3 player names.");
     return;
   }
 
-  if (spyCount >= players.length) {
-    alert("Spies must be fewer than total players.");
+  // Validate no duplicate player names
+  const uniquePlayers = new Set(players);
+  if (uniquePlayers.size !== players.length) {
+    alert("Player names must be unique.");
     return;
+  }
+
+  // Validate spy count
+  if (spyCount < 1 || spyCount >= players.length) {
+    alert("Invalid spy count. Must be at least 1 and fewer than total players.");
+    return;
+  }
+
+  let selectedTimer = timerSelect.value;
+  if (selectedTimer === "custom") {
+    const customMinutes = parseInt(document.getElementById("customMinutes").value, 10);
+    if (isNaN(customMinutes) || customMinutes < 1 || customMinutes > 60) {
+      alert("Enter a valid custom time between 1 and 60 minutes.");
+      return;
+    }
+    timerMinutes = customMinutes;
+  } else {
+    timerMinutes = parseInt(selectedTimer, 10);
   }
 
   // Save current game settings
@@ -154,7 +167,7 @@ function showRevealScreen(players) {
   switchScreen("revealScreen");
 
   const startBtn = document.getElementById("startGameBtn");
-  startBtn.style.display = "none"; // FIX: Kept hidden until all cards are viewed
+  startBtn.style.display = "none";
 
   const container = document.getElementById("playerButtons");
   container.innerHTML = "";
@@ -165,7 +178,6 @@ function showRevealScreen(players) {
   players.forEach(player => {
     const button = document.createElement("button");
     button.textContent = player;
-    // FIX: Passing the button element directly
     button.onclick = () => revealCard(player, button);
     container.appendChild(button);
   });
@@ -195,20 +207,24 @@ function revealCard(playerName, buttonElement) {
 
   card.style.display = "block";
   
-  // FIX: Dim the button using the passed element, avoiding querySelector error
   if (buttonElement) {
     buttonElement.style.opacity = "0.5";
   }
 
-  // FIX: using playerName instead of undefined 'player' variable
   card.dataset.currentPlayer = playerName;
 
   card.onclick = (e) => {
-    if (e.target === card || e.target.tagName === 'SMALL' || e.target.tagName === 'P' || e.target.tagName === 'H2' || e.target.tagName === 'HR') {
+    // Only hide if clicking on the card background or specific elements
+    if (e.target === card || 
+        e.target.tagName === 'SMALL' || 
+        e.target.tagName === 'P' || 
+        e.target.tagName === 'H2' || 
+        e.target.tagName === 'HR' ||
+        e.target.classList.contains('card-divider')) {
       hideCard(e);
     }
   };
-} // FIX: Removed the extra closing brace that caused the Syntax Error
+}
 
 /* ===========================
    HIDE CARD
@@ -231,7 +247,7 @@ function hideCard(event) {
       }
     });
     
-    // FIX: Show the start game button only after everyone has checked their roles
+    // Show the start game button only after everyone has checked their roles
     if (revealedPlayers.size === Object.keys(assignments).length) {
        document.getElementById("startGameBtn").style.display = "flex";
     }
@@ -246,12 +262,16 @@ function startGame() {
   gameStarted = true;
   document.getElementById("gameActions").style.display = "none";
   
+  // Reset pause state
+  timerPaused = false;
+  document.getElementById("pauseBtn").textContent = "Pause Timer";
+  
   if (timerMinutes > 0) {
-    startTimer(timerMinutes);
+    remainingSeconds = timerMinutes * 60;
+    startTimer();
   } else {
     const display = document.getElementById("timerDisplay");
     display.textContent = "No Timer";
-    display.style.background = "none";
     display.style.color = "var(--text-muted)";
   }
 }
@@ -259,25 +279,24 @@ function startGame() {
 /* ===========================
    TIMER
 =========================== */
-function startTimer(minutes) {
-  let seconds = minutes * 60;
+function startTimer() {
   const display = document.getElementById("timerDisplay");
 
   if (timerInterval) clearInterval(timerInterval);
 
   function tick() {
-    const min = Math.floor(seconds / 60);
-    const sec = seconds % 60;
+    const min = Math.floor(remainingSeconds / 60);
+    const sec = remainingSeconds % 60;
     display.textContent = `${min}:${sec < 10 ? "0" : ""}${sec}`;
 
     // Warning state for last 30 seconds
-    if (seconds <= 30) {
+    if (remainingSeconds <= 30) {
       display.classList.add("warning");
     } else {
       display.classList.remove("warning");
     }
 
-    if (seconds <= 0) {
+    if (remainingSeconds <= 0) {
       clearInterval(timerInterval);
       display.textContent = "Time's Up";
       display.classList.add("warning");
@@ -285,11 +304,31 @@ function startTimer(minutes) {
       return;
     }
 
-    seconds--;
+    remainingSeconds--;
   }
 
   tick(); // render immediately, don't wait 1s
   timerInterval = setInterval(tick, 1000);
+}
+
+/* ===========================
+   TOGGLE TIMER (PAUSE/RESUME)
+=========================== */
+function toggleTimer() {
+  const pauseBtn = document.getElementById("pauseBtn");
+  
+  if (timerInterval) {
+    // Pause the timer
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerPaused = true;
+    pauseBtn.textContent = "Resume Timer";
+  } else if (timerPaused && remainingSeconds > 0) {
+    // Resume the timer
+    timerPaused = false;
+    pauseBtn.textContent = "Pause Timer";
+    startTimer();
+  }
 }
 
 /* ===========================
@@ -306,7 +345,7 @@ function switchScreen(screenId) {
 function revealWinner() {
   const playerNames = Object.keys(assignments);
   
-  // FIX: Properly finds the spy/spies rather than just choosing a random player
+  // Find all spies
   const spies = playerNames.filter(p => assignments[p].role === "Spy");
   
   const card = document.getElementById("card");
@@ -341,14 +380,18 @@ function hideRevealCard() {
   card.style.inset = "";
   card.style.transform = "";
   card.style.margin = "";
+  document.getElementById("gameActions").style.display = "flex";
 }
 
 /* ===========================
    NEW GAME
 =========================== */
 function goToNewGame() {
-  // Clear the reveal screen
+  // Clear the timer
   if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+  timerPaused = false;
+  remainingSeconds = 0;
   
   // Populate setup screen with saved values
   document.getElementById("playerCount").value = currentPlayers.length;
