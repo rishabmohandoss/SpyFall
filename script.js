@@ -115,7 +115,7 @@ function startSetup() {
   currentSpyCount = spyCount;
 
   assignments = generateGame(players, spyCount);
-  currentLocation = Object.keys(assignments)[0] ? assignments[Object.keys(assignments)[0]].location : null;
+  const firstNonSpy = Object.keys(assignments).find(p => assignments[p].role !== "Spy"); currentLocation = firstNonSpy ? assignments[firstNonSpy].location : null;
   revealedPlayers.clear();
 
   showRevealScreen(players);
