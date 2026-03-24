@@ -28,11 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
   playerCountSelect.addEventListener("change", updateNameInputs);
   updateNameInputs();
 
-  // Timer select change handler
   const timerSelect = document.getElementById("timerSelect");
   timerSelect.addEventListener("change", updateTimerDisplay);
 
-  // Hide card and start button on load via JS (CSS handles visual state)
   document.getElementById("card").style.display = "none";
 });
 
@@ -42,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateTimerDisplay() {
   const timerSelect = document.getElementById("timerSelect");
   const customTimerInput = document.getElementById("customTimerInput");
-  
+
   if (timerSelect.value === "custom") {
     customTimerInput.style.display = "block";
   } else {
@@ -78,7 +76,7 @@ function startSetup() {
 
   const spyCount = parseInt(document.getElementById("spyCount").value);
   const timerSelect = document.getElementById("timerSelect");
-  
+
   // Validate at least 3 players
   if (players.length < 3) {
     alert("Enter at least 3 player names.");
@@ -86,7 +84,7 @@ function startSetup() {
   }
 
   // Validate no duplicate player names
-  const uniquePlayers = new Set(players);
+  const uniquePlayers = new Set(players.map(p => p.toLowerCase()));
   if (uniquePlayers.size !== players.length) {
     alert("Player names must be unique.");
     return;
@@ -95,6 +93,16 @@ function startSetup() {
   // Validate spy count
   if (spyCount < 1 || spyCount >= players.length) {
     alert("Invalid spy count. Must be at least 1 and fewer than total players.");
+    return;
+  }
+
+  // FIX #3 — Validate enough roles exist for non-spy players
+  const locationNames = Object.keys(LOCATIONS);
+  const testLocation = locationNames[0];
+  const maxRoles = Math.max(...locationNames.map(loc => LOCATIONS[loc].length));
+  const civiliansNeeded = players.length - spyCount;
+  if (civiliansNeeded > maxRoles) {
+    alert(`Too many civilian players (${civiliansNeeded}). The maximum supported is ${maxRoles} civilians. Please reduce player count or increase spy count.`);
     return;
   }
 
@@ -108,16 +116,18 @@ function startSetup() {
     timerMinutes = customMinutes;
   } else {
     timerMinutes = parseInt(selectedTimer, 10);
+    if (isNaN(timerMinutes)) timerMinutes = 0;
   }
 
-  // Save current game settings
   currentPlayers = [...players];
   currentSpyCount = spyCount;
 
-  assignments = generateGame(players, spyCount);
-  const firstNonSpy = Object.keys(assignments).find(p => assignments[p].role !== "Spy"); currentLocation = firstNonSpy ? assignments[firstNonSpy].location : null;
-  revealedPlayers.clear();
+  // FIX #2 — generateGame now returns { assignments, location }
+  const result = generateGame(players, spyCount);
+  assignments = result.assignments;
+  currentLocation = result.location;
 
+  revealedPlayers.clear();
   showRevealScreen(players);
 }
 
@@ -134,20 +144,27 @@ function generateGame(players, spyCount) {
   shuffle(playersCopy);
   shuffle(roles);
 
-  const result = {};
+  // FIX #3 — If not enough roles, cycle through them instead of falling back to "Observer"
+  const civiliansNeeded = playersCopy.length - spyCount;
+  const paddedRoles = [];
+  for (let i = 0; i < civiliansNeeded; i++) {
+    paddedRoles.push(roles[i % roles.length]);
+  }
 
+  const result = {};
   for (let i = 0; i < playersCopy.length; i++) {
     if (i < spyCount) {
       result[playersCopy[i]] = { location: null, role: "Spy" };
     } else {
       result[playersCopy[i]] = {
         location: chosenLocation,
-        role: roles[i - spyCount] || "Observer"
+        role: paddedRoles[i - spyCount]
       };
     }
   }
 
-  return result;
+  // FIX #2 — Return both assignments and the chosen location directly
+  return { assignments: result, location: chosenLocation };
 }
 
 /* ===========================
@@ -190,41 +207,39 @@ function showRevealScreen(players) {
    REVEAL CARD
 =========================== */
 function revealCard(playerName, buttonElement) {
-  const card = document.getElementById('card');
+  const card = document.getElementById("card");
   const data = assignments[playerName];
 
   if (!data) return;
 
   const isSpy = data.role === "Spy";
 
+  // FIX #1 — Role is now the big <h2>, location is the supporting <p>
+  // FIX #5 — Removed fragile cloneNode approach; use a named handler + removeEventListener
   card.innerHTML = `
     <div class="card-header">
-      <h3>${isSpy ? 'Classification' : 'Location'}</h3>
+      <h3>${isSpy ? "Classification" : "Your Role"}</h3>
       <button class="card-close" onclick="hideCard(event)">✕</button>
     </div>
-    <h2>${isSpy ? '— SPY —' : data.location}</h2>
-    <p>${isSpy ? 'Identify the location without being caught.' : '<strong>Role:</strong> ' + data.role}</p>
+    <h2>${isSpy ? "— SPY —" : data.role}</h2>
+    <p>${isSpy ? "Identify the location without being caught." : "<strong>Location:</strong> " + data.location}</p>
     <hr class="card-divider">
     <small>Tap to hide, then pass the device.</small>
   `;
 
   card.style.display = "block";
-  
+  card.dataset.currentPlayer = playerName;
+
   if (buttonElement) {
     buttonElement.style.opacity = "0.5";
   }
 
-  card.dataset.currentPlayer = playerName;
-
-  // Remove any old event listeners by cloning
-  const newCard = card.cloneNode(true);
-  card.parentNode.replaceChild(newCard, card);
-  const updatedCard = document.getElementById("card");
-
-  // Add click handler to the new card element
-  updatedCard.addEventListener('click', (e) => {
-    handleCardClick(e, playerName);
-  });
+  // FIX #5 — Clean handler reference stored on the element itself to avoid stacking
+  if (card._clickHandler) {
+    card.removeEventListener("click", card._clickHandler);
+  }
+  card._clickHandler = (e) => handleCardClick(e, playerName);
+  card.addEventListener("click", card._clickHandler);
 }
 
 /* ===========================
@@ -232,16 +247,17 @@ function revealCard(playerName, buttonElement) {
 =========================== */
 function handleCardClick(e, playerName) {
   e.stopPropagation();
-  
-  const card = document.getElementById('card');
-  
-  // Only hide if clicking on the card background or text elements
-  if (e.target === card || 
-      e.target.tagName === 'SMALL' || 
-      e.target.tagName === 'P' || 
-      e.target.tagName === 'H2' || 
-      e.target.tagName === 'HR' ||
-      e.target.classList.contains('card-divider')) {
+
+  const card = document.getElementById("card");
+
+  if (
+    e.target === card ||
+    e.target.tagName === "SMALL" ||
+    e.target.tagName === "P" ||
+    e.target.tagName === "H2" ||
+    e.target.tagName === "HR" ||
+    e.target.classList.contains("card-divider")
+  ) {
     hideCard(e);
   }
 }
@@ -253,12 +269,17 @@ function hideCard(event) {
   event.stopPropagation();
   const card = document.getElementById("card");
   const currentPlayer = card.dataset.currentPlayer;
-  
+
   if (currentPlayer && !revealedPlayers.has(currentPlayer)) {
     card.style.display = "none";
     revealedPlayers.add(currentPlayer);
-    
-    // Find and disable the button for this player
+
+    // FIX #5 — Remove the click handler after hiding
+    if (card._clickHandler) {
+      card.removeEventListener("click", card._clickHandler);
+      card._clickHandler = null;
+    }
+
     const buttons = document.querySelectorAll("#playerButtons button");
     buttons.forEach(button => {
       if (button.textContent === currentPlayer) {
@@ -266,10 +287,9 @@ function hideCard(event) {
         button.style.opacity = "0.35";
       }
     });
-    
-    // Show the start game button only after everyone has checked their roles
+
     if (revealedPlayers.size === Object.keys(assignments).length) {
-       document.getElementById("startGameBtn").style.display = "flex";
+      document.getElementById("startGameBtn").style.display = "flex";
     }
   }
 }
@@ -280,12 +300,13 @@ function hideCard(event) {
 function startGame() {
   switchScreen("gameScreen");
   gameStarted = true;
+
+  // FIX #6 — Always hide gameActions at the start of every game
   document.getElementById("gameActions").style.display = "none";
-  
-  // Reset pause state
+
   timerPaused = false;
   document.getElementById("pauseBtn").textContent = "Pause Timer";
-  
+
   if (timerMinutes > 0) {
     remainingSeconds = timerMinutes * 60;
     startTimer();
@@ -309,7 +330,6 @@ function startTimer() {
     const sec = remainingSeconds % 60;
     display.textContent = `${min}:${sec < 10 ? "0" : ""}${sec}`;
 
-    // Warning state for last 30 seconds
     if (remainingSeconds <= 30) {
       display.classList.add("warning");
     } else {
@@ -318,6 +338,7 @@ function startTimer() {
 
     if (remainingSeconds <= 0) {
       clearInterval(timerInterval);
+      timerInterval = null;
       display.textContent = "Time's Up";
       display.classList.add("warning");
       document.getElementById("gameActions").style.display = "flex";
@@ -327,7 +348,7 @@ function startTimer() {
     remainingSeconds--;
   }
 
-  tick(); // render immediately, don't wait 1s
+  tick();
   timerInterval = setInterval(tick, 1000);
 }
 
@@ -336,15 +357,13 @@ function startTimer() {
 =========================== */
 function toggleTimer() {
   const pauseBtn = document.getElementById("pauseBtn");
-  
+
   if (timerInterval) {
-    // Pause the timer
     clearInterval(timerInterval);
     timerInterval = null;
     timerPaused = true;
     pauseBtn.textContent = "Resume Timer";
   } else if (timerPaused && remainingSeconds > 0) {
-    // Resume the timer
     timerPaused = false;
     pauseBtn.textContent = "Pause Timer";
     startTimer();
@@ -364,10 +383,8 @@ function switchScreen(screenId) {
 =========================== */
 function revealWinner() {
   const playerNames = Object.keys(assignments);
-  
-  // Find all spies
   const spies = playerNames.filter(p => assignments[p].role === "Spy");
-  
+
   const card = document.getElementById("card");
   card.style.display = "block";
   card.style.position = "fixed";
@@ -378,17 +395,18 @@ function revealWinner() {
   card.style.maxWidth = "432px";
   card.style.width = "calc(100% - 48px)";
 
+  // FIX #2 — currentLocation is always a real string now, never null
   card.innerHTML = `
     <div class="card-header">
       <h3>Game Over</h3>
       <button class="card-close" onclick="hideRevealCard()">✕</button>
     </div>
     <h2 style="color:#e05544;font-family:var(--font-body);font-weight:700;letter-spacing:1px;text-transform:uppercase;">
-      ${spies.length > 1 ? '— SPIES —' : '— SPY —'}
+      ${spies.length > 1 ? "— SPIES —" : "— SPY —"}
     </h2>
-    <p>${spies.join(', ')}</p>
+    <p>${spies.join(", ")}</p>
     <hr>
-    <small>Location was: <strong>${currentLocation}</strong></small>
+    <small>Location was: <strong>${currentLocation ?? "Unknown"}</strong></small>
   `;
 }
 
@@ -407,36 +425,48 @@ function hideRevealCard() {
    NEW GAME
 =========================== */
 function goToNewGame() {
-  // Clear the timer
+  // Clear timer
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
   timerPaused = false;
   remainingSeconds = 0;
-  
-  // Populate setup screen with saved values
+
+  // FIX #4 — Explicitly reset timerMinutes so old value doesn't bleed into new game
+  timerMinutes = 0;
+
+  // FIX #6 — Reset gameActions visibility for the new game
+  document.getElementById("gameActions").style.display = "none";
+
+  // Restore timer display text in case it said "Time's Up" or "No Timer"
+  const display = document.getElementById("timerDisplay");
+  display.textContent = "0:00";
+  display.classList.remove("warning");
+
+  // Populate setup screen with saved player values
   document.getElementById("playerCount").value = currentPlayers.length;
   updateNameInputs();
-  
-  // Fill in player names
+
   const inputs = document.querySelectorAll("#playerNameInputs input");
   inputs.forEach((input, index) => {
     if (index < currentPlayers.length) {
       input.value = currentPlayers[index];
     }
   });
-  
-  // Set spy count
+
   document.getElementById("spyCount").value = currentSpyCount;
-  
-  // Reset timer select to no timer
-  document.getElementById("timerSelect").value = "0";
-  document.getElementById("customTimerInput").style.display = "none";
-  
+
+  // FIX #7 — Reset timer select using the correct default value "0"
+  // (matches the "No Timer" <option value="0"> in HTML)
+  const timerSelect = document.getElementById("timerSelect");
+  timerSelect.value = "0";
+  // Trigger the display update in case "custom" was previously selected
+  updateTimerDisplay();
+
   // Reset game state
   gameStarted = false;
   revealedPlayers.clear();
   assignments = {};
-  
-  // Go back to setup screen
+  currentLocation = null;
+
   switchScreen("setupScreen");
 }
