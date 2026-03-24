@@ -194,8 +194,14 @@ function showRevealScreen(players) {
 
 /* ===========================
    SHOW CARD AS FIXED OVERLAY
+   MOBILE FIX: animation is opacity-only so translate(-50%,-50%) works
 =========================== */
 function showCardOverlay(card) {
+  // Reset animation so cardFadeIn replays each time
+  card.style.animation = 'none';
+  card.offsetHeight; // force reflow
+  card.style.animation = '';
+
   card.style.display = "block";
   card.style.position = "fixed";
   card.style.top = "50%";
@@ -203,13 +209,12 @@ function showCardOverlay(card) {
   card.style.transform = "translate(-50%, -50%)";
   card.style.zIndex = "9999";
   card.style.margin = "0";
-  card.style.width = "calc(100% - 48px)";
-  card.style.maxWidth = "432px";
+  card.style.width = "calc(100% - 40px)";
+  card.style.maxWidth = "420px";
   card.style.height = "auto";
   card.style.overflow = "visible";
   card.style.padding = "28px";
 }
-
 /* ===========================
    HIDE CARD COMPLETELY
 =========================== */
