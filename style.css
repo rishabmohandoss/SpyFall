@@ -1,35 +1,37 @@
 /* ============================================
    SPYFALL — style.css
-   Aesthetic: Classified Intelligence / Noir Luxury
+   Theme: Deep Cover / Black Ops
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
 
 /* ── Variables ── */
 :root {
-  --bg:            #080809;
-  --surface:       #111115;
-  --surface-2:     #17171d;
-  --surface-3:     #1d1d26;
-  --border:        rgba(255,255,255,0.07);
-  --border-bright: rgba(255,255,255,0.13);
-  --text:          #d8d8e6;
-  --text-muted:    #64647a;
-  --text-dim:      #2a2a36;
-  --gold:          #c9a96e;
-  --gold-light:    #dfc08a;
-  --gold-dim:      rgba(201,169,110,0.14);
-  --red:           #b83225;
-  --white:         #eeeef5;
-  --radius-sm:     10px;
-  --radius-md:     16px;
-  --radius-lg:     22px;
-  --radius-xl:     28px;
+  --bg:            #040405;
+  --surface:       #0a0a0d;
+  --surface-2:     #101014;
+  --surface-3:     #16161c;
+  --border:        rgba(255,255,255,0.06);
+  --border-bright: rgba(255,255,255,0.12);
+  --text:          #b8b8c8;
+  --text-muted:    #52526a;
+  --text-dim:      #222230;
+  --green:         #00ff88;
+  --green-dim:     rgba(0,255,136,0.12);
+  --green-dark:    #00cc6a;
+  --red:           #cc2211;
+  --red-bright:    #ff3322;
+  --amber:         #ffaa00;
+  --white:         #e8e8f0;
+  --radius-sm:     6px;
+  --radius-md:     10px;
+  --radius-lg:     14px;
+  --radius-xl:     18px;
   --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
-  --font-display:  'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-display:  'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
   --font-body:     'DM Sans', -apple-system, 'Helvetica Neue', sans-serif;
-  --font-mono:     'SF Mono', 'Fira Code', ui-monospace, 'Courier New', monospace;
+  --font-mono:     'Share Tech Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace;
 }
 
 /* ── Reset ── */
@@ -43,8 +45,6 @@
 html, body {
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
   overflow: hidden;
 }
 
@@ -55,23 +55,28 @@ body {
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Global ambient layers ── */
-
+/* ── Scanline overlay ── */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(201,169,110,0.08) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 45% at 90% 105%, rgba(180,50,37,0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 35% at 10% 90%, rgba(40,40,80,0.15) 0%, transparent 50%);
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,136,0.015) 2px,
+      rgba(0,255,136,0.015) 4px
+    ),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,255,136,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(204,34,17,0.05) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
 
+/* ── Film grain ── */
 body::after {
   content: '';
   position: fixed;
@@ -80,51 +85,10 @@ body::after {
   height: 200%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   background-size: 256px 256px;
-  opacity: 0.028;
+  opacity: 0.03;
   pointer-events: none;
   z-index: 0;
   animation: grain 8s steps(10) infinite;
-}
-
-/* ── Screens ── */
-.screen {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-top: max(env(safe-area-inset-top), 40px);
-  padding-bottom: max(env(safe-area-inset-bottom), 40px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 350ms var(--ease-out);
-  z-index: 1;
-}
-
-.screen.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.screen.active > * {
-  pointer-events: auto;
-}
-
-.screen.active > * {
-  animation: fadeRise 600ms var(--ease-out) both;
-}
-.screen.active > *:nth-child(1) { animation-delay: 30ms;  }
-.screen.active > *:nth-child(2) { animation-delay: 90ms;  }
-.screen.active > *:nth-child(3) { animation-delay: 150ms; }
-.screen.active > *:nth-child(4) { animation-delay: 210ms; }
-
-@keyframes fadeRise {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0);    }
 }
 
 @keyframes grain {
@@ -140,138 +104,181 @@ body::after {
   90%       { transform: translate(3%, -1%); }
 }
 
+/* ── Screens ── */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-top: max(env(safe-area-inset-top), 32px);
+  padding-bottom: max(env(safe-area-inset-bottom), 32px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms var(--ease-out);
+  z-index: 1;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.screen.active > * {
+  pointer-events: auto;
+  animation: fadeRise 500ms var(--ease-out) both;
+}
+.screen.active > *:nth-child(1) { animation-delay: 20ms; }
+.screen.active > *:nth-child(2) { animation-delay: 70ms; }
+.screen.active > *:nth-child(3) { animation-delay: 120ms; }
+.screen.active > *:nth-child(4) { animation-delay: 170ms; }
+
+@keyframes fadeRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .screen > * {
   width: 100%;
   max-width: 480px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 /* ── Typography ── */
 h1 {
   font-family: var(--font-display);
-  font-size: clamp(34px, 9.5vw, 48px);
-  font-weight: 900;
-  letter-spacing: -0.5px;
+  font-size: clamp(42px, 12vw, 64px);
+  font-weight: 400; /* Bebas Neue is naturally bold */
+  letter-spacing: 3px;
   color: var(--white);
-  line-height: 1.1;
+  line-height: 1.0;
+  text-transform: uppercase;
 }
 
 h2 {
   font-family: var(--font-display);
-  font-size: clamp(20px, 5.5vw, 26px);
-  font-weight: 700;
+  font-size: clamp(28px, 8vw, 40px);
+  font-weight: 400;
   color: var(--white);
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: 2.5px;
+  font-weight: 400;
+  color: var(--green);
+  letter-spacing: 2px;
   text-transform: uppercase;
   opacity: 0.8;
 }
 
 p {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-muted);
-  line-height: 1.7;
+  line-height: 1.6;
   font-weight: 300;
 }
 
 label {
   display: block;
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 600;
   color: var(--text-muted);
   letter-spacing: 1.8px;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
-/* ── Setup Screen header ── */
+/* ── Setup Screen ── */
 #setupScreen h1 {
-  padding-top: 20px;
-  padding-bottom: 4px;
+  padding-top: 16px;
+  padding-bottom: 2px;
   position: relative;
 }
 
 #setupScreen h1::after {
   content: '';
   display: block;
-  width: 36px;
-  height: 1.5px;
-  background: linear-gradient(90deg, var(--gold), rgba(201,169,110,0.2));
-  margin-top: 6px;
-  border-radius: 1px;
+  width: 40px;
+  height: 2px;
+  background: var(--green);
+  margin-top: 8px;
+  box-shadow: 0 0 8px rgba(0,255,136,0.5);
 }
 
 #setupScreen > p {
   padding-top: 4px;
-  padding-bottom: 16px;
-  font-size: 12px;
-  font-style: italic;
-  letter-spacing: 0.15px;
+  padding-bottom: 12px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
 }
 
-/* ── Player and Settings Sections ── */
+/* ── Sections ── */
 #playerSection, #settingsSection {
   width: 100%;
   max-width: 480px;
-  padding-left: 24px;
-  padding-right: 24px;
-  margin-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-bottom: 16px;
 }
 
-#customTimerInput { margin-top: 10px; }
-.section-label { padding-bottom: 0; margin-bottom: 10px; }
+#customTimerInput { margin-top: 8px; }
+.section-label { padding-bottom: 0; margin-bottom: 8px; }
 
 /* ── Inputs & Selects ── */
 input, select {
   width: 100%;
-  height: 54px;
-  padding: 0 18px;
-  background: rgba(17, 17, 21, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  height: 50px;
+  padding: 0 16px;
+  background: rgba(10,10,13,0.9);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--white);
-  font-family: var(--font-body);
-  font-size: 16px;
+  font-family: var(--font-mono);
+  font-size: 14px;
   font-weight: 400;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
   margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
-input::placeholder { color: var(--text-dim); font-weight: 300; }
+input::placeholder {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
 
 input:focus, select:focus {
-  border-color: rgba(201,169,110,0.35);
-  background: rgba(23, 23, 29, 0.95);
-  box-shadow: 0 0 0 3px rgba(201,169,110,0.07), 0 2px 12px rgba(0,0,0,0.35);
+  border-color: rgba(0,255,136,0.35);
+  box-shadow: 0 0 0 3px rgba(0,255,136,0.06), 0 0 12px rgba(0,255,136,0.08);
 }
 
 select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364647a' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2352526a' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 18px center;
-  padding-right: 44px;
+  background-position: right 16px center;
+  padding-right: 40px;
   cursor: pointer;
 }
 
-select option { background: #1a1a22; color: var(--text); }
+select option { background: #0f0f14; color: var(--text); }
 
 #playerNameInputs {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 0;
   margin-top: 8px;
 }
@@ -283,172 +290,169 @@ button {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 56px;
-  padding: 0 24px;
+  height: 52px;
+  padding: 0 20px;
   border: none;
   border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease, transform 120ms ease, opacity 200ms ease;
+  transition: background 200ms ease, border-color 200ms ease,
+              box-shadow 200ms ease, transform 120ms ease, opacity 200ms ease;
   -webkit-user-select: none;
   user-select: none;
 }
 
-button::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0; left: -100%;
-  width: 60%;
-  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.06), transparent);
-  transition: left 500ms ease;
-  pointer-events: none;
-}
-button:hover::after { left: 160%; }
-button:active       { transform: scale(0.97); }
+button:active { transform: scale(0.97); }
 
-/* ── Primary CTA ── */
-#startGameBtn {
-  background: linear-gradient(135deg, #c9a96e 0%, #a07840 100%);
-  color: #1c1208;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  box-shadow: 0 4px 24px rgba(201,169,110,0.28), 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.2) inset;
-  display: flex;           /* FIX — removed !important so JS can hide it */
+/* ── Begin Session / Primary CTA ── */
+#beginSessionBtn {
+  background: transparent;
+  color: var(--green);
+  border: 1px solid var(--green);
+  display: flex;
+  margin-top: 16px;
+  margin-bottom: 32px;
   flex-shrink: 0;
-  margin-top: 20px;
-  margin-bottom: 40px;
+  box-shadow: 0 0 16px rgba(0,255,136,0.12), inset 0 0 16px rgba(0,255,136,0.04);
   width: 100%;
-  max-width: 480px;
+  max-width: 440px;
+}
+#beginSessionBtn:hover {
+  background: rgba(0,255,136,0.08);
+  box-shadow: 0 0 24px rgba(0,255,136,0.2), inset 0 0 20px rgba(0,255,136,0.06);
 }
 
+/* ── Start Game Button ── */
+#startGameBtn {
+  background: transparent;
+  color: var(--green);
+  border: 1px solid var(--green);
+  display: flex;           /* no !important — JS can now override */
+  flex-shrink: 0;
+  margin-top: 16px;
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 0 16px rgba(0,255,136,0.12), inset 0 0 16px rgba(0,255,136,0.04);
+}
 #startGameBtn:hover {
-  background: linear-gradient(135deg, #d4b47a 0%, #ab8348 100%);
-  box-shadow: 0 6px 32px rgba(201,169,110,0.4), 0 1px 0 rgba(255,255,255,0.12) inset;
+  background: rgba(0,255,136,0.08);
+  box-shadow: 0 0 24px rgba(0,255,136,0.2);
 }
 
-/* ── Secondary / utility buttons ── */
-button:not(#startGameBtn):not(#playerButtons button) {
-  background: rgba(23, 23, 29, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+/* ── Secondary buttons ── */
+button:not(#startGameBtn):not(#beginSessionBtn):not(#playerButtons button) {
+  background: rgba(16,16,20,0.9);
   color: var(--text);
   border: 1px solid var(--border);
 }
-button:not(#startGameBtn):not(#playerButtons button):hover {
+button:not(#startGameBtn):not(#beginSessionBtn):not(#playerButtons button):hover {
   background: var(--surface-3);
   border-color: var(--border-bright);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
-button:not(#startGameBtn):not(#playerButtons button):disabled {
-  opacity: 0.3;
+button:not(#startGameBtn):not(#beginSessionBtn):not(#playerButtons button):disabled {
+  opacity: 0.25;
   pointer-events: none;
 }
 
 /* ── Reveal Screen ── */
-#revealScreen h1 { padding-top: 52px; text-align: center; padding-bottom: 6px; }
-#revealScreen p { text-align: center; font-size: 14px; font-style: italic; padding-bottom: 32px; }
+#revealScreen h1 {
+  padding-top: 40px;
+  text-align: center;
+  padding-bottom: 4px;
+  letter-spacing: 4px;
+}
+#revealScreen p {
+  text-align: center;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  padding-bottom: 24px;
+  letter-spacing: 0.5px;
+}
 
 /* ── Player Buttons ── */
 #playerButtons {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   max-width: 480px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 #playerButtons button {
   background: var(--surface);
   color: var(--white);
   border: 1px solid var(--border);
-  height: 64px;
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
+  height: 60px;
+  font-size: 15px;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 1px;
   text-align: left;
-  padding: 0 22px 0 20px;
+  padding: 0 20px;
   justify-content: space-between;
-}
-#playerButtons button::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 16%; bottom: 16%;
-  width: 2px;
-  background: linear-gradient(180deg, transparent, var(--gold), transparent);
-  border-radius: 0 1px 1px 0;
-  opacity: 0;
-  transition: opacity 200ms ease, top 200ms ease, bottom 200ms ease;
+  text-transform: uppercase;
 }
 #playerButtons button::after {
-  content: '→';
-  font-size: 14px;
-  color: var(--text-dim);
-  transition: color 200ms ease, transform 200ms ease;
-  opacity: 1;
+  content: '›';
+  font-size: 18px;
+  color: var(--green);
+  opacity: 0.5;
+  transition: opacity 200ms ease, transform 200ms ease;
 }
 #playerButtons button:hover {
   background: var(--surface-2);
-  border-color: rgba(201,169,110,0.18);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.45), inset 0 0 30px rgba(201,169,110,0.025);
+  border-color: rgba(0,255,136,0.2);
+  box-shadow: 0 0 20px rgba(0,255,136,0.05);
 }
-#playerButtons button:hover::before { opacity: 1; top: 10%; bottom: 10%; }
-#playerButtons button:hover::after { color: var(--gold); transform: translateX(3px); }
-#playerButtons button:active { transform: scale(0.975); background: var(--surface-3); }
+#playerButtons button:hover::after { opacity: 1; transform: translateX(3px); }
+#playerButtons button:active { transform: scale(0.975); }
 
 /* ── Card ── */
+/* MOBILE FIX: card is always a fixed centered overlay when shown by JS.
+   The animation only uses opacity — NO transform — so JS translate(-50%,-50%) works. */
 #card {
-  width: calc(100% - 48px);
-  max-width: 432px;
-  margin: 0 auto 28px;
+  width: calc(100% - 40px);
+  max-width: 420px;
+  margin: 0 auto 24px;
   background: var(--surface);
   border-radius: var(--radius-xl);
-  padding: 28px;              /* FIX — was 0, card needs padding to have height */
+  padding: 28px;                /* FIX: was 0 */
   position: relative;
-  overflow: visible;          /* FIX — was hidden, was clipping card content */
+  overflow: visible;            /* FIX: was hidden */
+  border: 1px solid rgba(0,255,136,0.15);
   box-shadow:
-    0 0 0 1px var(--border),
-    0 2px 4px rgba(0,0,0,0.3),
-    0 12px 40px rgba(0,0,0,0.6),
-    0 32px 80px rgba(0,0,0,0.5);
-  animation: cardIn 560ms var(--ease-out) both;
+    0 0 0 1px rgba(0,255,136,0.08),
+    0 2px 4px rgba(0,0,0,0.5),
+    0 16px 48px rgba(0,0,0,0.7),
+    0 0 60px rgba(0,255,136,0.04);
+  /* MOBILE FIX: animation uses ONLY opacity — no transform conflict with JS centering */
+  animation: cardFadeIn 400ms var(--ease-out) both;
   cursor: pointer;
 }
 
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(32px) scale(0.94);
-    box-shadow: 0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.2);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    box-shadow:
-      0 0 0 1px var(--border),
-      0 2px 4px rgba(0,0,0,0.3),
-      0 12px 40px rgba(0,0,0,0.6),
-      0 32px 80px rgba(0,0,0,0.5);
-  }
+/* MOBILE FIX: keyframe has NO transform — JS translate(-50%,-50%) now works correctly */
+@keyframes cardFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 #card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 100% 50% at 50% 0%, rgba(201,169,110,0.09) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 40% at 50% 110%, rgba(0,0,0,0.25) 0%, transparent 100%);
+  border-radius: var(--radius-xl);
+  background: radial-gradient(ellipse 100% 50% at 50% 0%, rgba(0,255,136,0.04) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
-  border-radius: var(--radius-xl); /* FIX — keep gradient clipped to card shape */
 }
 
 #card::after {
@@ -456,17 +460,18 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background: linear-gradient(90deg,
     transparent 5%,
-    rgba(201,169,110,0.4) 20%,
-    var(--gold) 40%,
-    rgba(201,169,110,0.9) 50%,
-    var(--gold) 60%,
-    rgba(201,169,110,0.4) 80%,
+    rgba(0,255,136,0.3) 20%,
+    var(--green) 40%,
+    rgba(0,255,136,0.8) 50%,
+    var(--green) 60%,
+    rgba(0,255,136,0.3) 80%,
     transparent 95%
   );
+  box-shadow: 0 0 12px rgba(0,255,136,0.3);
   z-index: 1;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 #card > * { position: relative; z-index: 2; }
@@ -475,14 +480,14 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 16px 0;        /* FIX — was 30px 28px 0, padding now on #card itself */
+  padding: 0 0 14px 0;
 }
 
 .card-header h3 {
   padding: 0;
   margin: 0;
-  color: var(--gold);
-  opacity: 0.65;
+  color: var(--green);
+  opacity: 0.7;
   font-size: 9px;
   letter-spacing: 3px;
 }
@@ -491,7 +496,7 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
   padding: 0;
   width: auto;
@@ -501,25 +506,29 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   align-items: center;
   justify-content: center;
   margin: 0;
+  font-family: var(--font-body);
 }
-.card-close:hover { color: var(--gold); }
+.card-close:hover { color: var(--green); }
 
 #card h2 {
-  padding: 0 0 8px 0;         /* FIX — was 16px 28px 0, padding now on #card itself */
+  padding: 0 0 6px 0;
   font-family: var(--font-display);
-  font-size: clamp(24px, 6.5vw, 30px);
-  font-weight: 900;
+  font-size: clamp(26px, 7vw, 34px);
+  font-weight: 400;
   color: var(--white);
-  line-height: 1.15;
-  letter-spacing: -0.4px;
+  line-height: 1.1;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
 
 #card p {
-  padding: 0 0 8px 0;         /* FIX — was 10px 28px 0, padding now on #card itself */
-  font-size: 15px;
+  padding: 0 0 6px 0;
+  font-size: 13px;
   font-weight: 300;
-  color: var(--text-muted);
-  font-style: italic;
+  font-family: var(--font-mono);
+  color: var(--green);
+  font-style: normal;
+  letter-spacing: 0.5px;
 }
 
 #card hr, #card .card-divider {
@@ -527,105 +536,87 @@ button:not(#startGameBtn):not(#playerButtons button):disabled {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
   border: none;
-  margin: 20px 0;             /* FIX — was 24px 28px, horizontal margin now 0 */
+  margin: 16px 0;
 }
 
 #card small {
   display: block;
-  padding: 0;                 /* FIX — was 0 28px 30px, padding now on #card itself */
-  font-size: 11px;
+  padding: 0;
+  font-size: 10px;
+  font-family: var(--font-mono);
   color: var(--text-dim);
-  letter-spacing: 0.5px;
-  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-/* ── Game Screen & Timer ── */
+/* ── Game Screen ── */
 #gameScreen {
   justify-content: center;
   align-items: center;
   text-align: center;
 }
 #gameScreen > * { text-align: center; }
-#gameScreen h1 { font-family: var(--font-display); margin-bottom: 10px; }
-#gameScreen p { font-size: 14px; font-style: italic; margin-bottom: 0; }
+#gameScreen h1 {
+  font-family: var(--font-display);
+  margin-bottom: 8px;
+  letter-spacing: 4px;
+  font-size: clamp(28px, 8vw, 40px);
+}
+#gameScreen p {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  margin-bottom: 0;
+  letter-spacing: 0.5px;
+}
 
+/* MOBILE FIX: reduced timer size so buttons stay on screen */
 #timerDisplay {
   display: block;
   width: 100%;
   max-width: 480px;
-  padding: 12px 24px;
-  margin: 18px auto 40px;
+  padding: 8px 20px;
+  margin: 12px auto 24px;       /* FIX: was 18px auto 40px */
   text-align: center;
   font-family: var(--font-mono);
-  font-size: clamp(80px, 24vw, 116px);
-  font-weight: 200;
-  letter-spacing: -5px;
+  font-size: clamp(56px, 18vw, 96px);  /* FIX: was clamp(80px,24vw,116px) */
+  font-weight: 400;
+  letter-spacing: -2px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  background: linear-gradient(175deg, var(--white) 0%, rgba(215,215,228,0.85) 50%, rgba(150,150,168,0.6) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--green);
+  text-shadow: 0 0 20px rgba(0,255,136,0.4), 0 0 60px rgba(0,255,136,0.15);
   position: relative;
 }
 
-#timerDisplay::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 60% 55% at 50% 60%, rgba(201,169,110,0.055) 0%, transparent 70%);
-  pointer-events: none;
-}
-
 #timerDisplay.warning {
-  background: linear-gradient(175deg, #ff7060 0%, var(--red) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: urgentPulse 900ms ease-in-out infinite;
+  color: var(--red-bright);
+  text-shadow: 0 0 20px rgba(255,51,34,0.5), 0 0 60px rgba(255,51,34,0.2);
+  animation: urgentPulse 800ms ease-in-out infinite;
 }
 
 @keyframes urgentPulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.65; }
+  50%       { opacity: 0.5; }
 }
 
-#gameScreen button { max-width: 432px; margin: 0 auto 12px; }
+/* MOBILE FIX: game screen buttons smaller bottom margin */
+#gameScreen button {
+  max-width: 420px;
+  margin: 0 auto 10px;           /* FIX: was 0 auto 12px */
+}
 
-/* ── Scrollbar & Focus ── */
-::-webkit-scrollbar { width: 3px; }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 2px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.15); border-radius: 2px; }
+
 :focus-visible {
-  outline: 2px solid rgba(201,169,110,0.45);
+  outline: 2px solid rgba(0,255,136,0.4);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-/* ── Begin Session Button ── */
-#beginSessionBtn {
-  background: linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%);
-  color: var(--gold);
-  border: 1px solid var(--gold-dim);
-  display: flex;               /* FIX — removed !important so JS can hide it */
-  margin-top: auto;
-  margin-bottom: 40px;
-  flex-shrink: 0;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  width: 100%;
-  max-width: 432px;
-}
-#beginSessionBtn:hover {
-  background: var(--surface-3);
-  border-color: var(--gold);
-  color: var(--gold-light);
-  box-shadow: 0 6px 20px rgba(201,169,110,0.1);
-}
-
-/* ── 3D Spline Background ── */
+/* ── Spline Background ── */
 spline-viewer {
   position: fixed;
   top: 0;
@@ -634,4 +625,46 @@ spline-viewer {
   height: 100vh;
   height: 100dvh;
   z-index: -1;
+}
+
+/* ── Mobile specific overrides ── */
+@media (max-width: 480px) {
+  .screen {
+    padding-top: max(env(safe-area-inset-top), 24px);
+    padding-bottom: max(env(safe-area-inset-bottom), 24px);
+  }
+
+  .screen > * {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  #playerSection, #settingsSection, #playerButtons {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  h1 { font-size: clamp(36px, 11vw, 52px); }
+
+  #revealScreen h1 { padding-top: 28px; }
+
+  input, select { height: 46px; font-size: 13px; }
+
+  button { height: 48px; font-size: 12px; }
+
+  #playerButtons button { height: 54px; font-size: 13px; }
+
+  #card {
+    width: calc(100% - 32px);
+    padding: 22px;
+  }
+
+  #timerDisplay {
+    font-size: clamp(48px, 16vw, 80px);
+    margin: 8px auto 16px;
+  }
+
+  #gameScreen button {
+    margin: 0 auto 8px;
+  }
 }
