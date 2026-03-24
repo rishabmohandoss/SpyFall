@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateTimerDisplay() {
   const timerSelect = document.getElementById("timerSelect");
   const customTimerInput = document.getElementById("customTimerInput");
-
   if (timerSelect.value === "custom") {
     customTimerInput.style.display = "block";
   } else {
@@ -55,7 +54,6 @@ function updateNameInputs() {
   const count = parseInt(document.getElementById("playerCount").value);
   const container = document.getElementById("playerNameInputs");
   container.innerHTML = "";
-
   for (let i = 1; i <= count; i++) {
     const input = document.createElement("input");
     input.type = "text";
@@ -93,7 +91,6 @@ function startSetup() {
     return;
   }
 
-  // FIX #3 — Validate enough roles exist
   const locationNames = Object.keys(LOCATIONS);
   const maxRoles = Math.max(...locationNames.map(loc => LOCATIONS[loc].length));
   const civiliansNeeded = players.length - spyCount;
@@ -118,7 +115,6 @@ function startSetup() {
   currentPlayers = [...players];
   currentSpyCount = spyCount;
 
-  // FIX #2 — generateGame returns { assignments, location }
   const result = generateGame(players, spyCount);
   assignments = result.assignments;
   currentLocation = result.location;
@@ -140,7 +136,6 @@ function generateGame(players, spyCount) {
   shuffle(playersCopy);
   shuffle(roles);
 
-  // FIX #3 — Cycle roles instead of falling back to "Observer"
   const civiliansNeeded = playersCopy.length - spyCount;
   const paddedRoles = [];
   for (let i = 0; i < civiliansNeeded; i++) {
@@ -159,7 +154,6 @@ function generateGame(players, spyCount) {
     }
   }
 
-  // FIX #2 — Return location directly so currentLocation is never null
   return { assignments: result, location: chosenLocation };
 }
 
@@ -180,15 +174,12 @@ function showRevealScreen(players) {
   switchScreen("revealScreen");
 
   const startBtn = document.getElementById("startGameBtn");
-  // FIX — use !important via cssText to override the CSS display:flex !important
   startBtn.style.setProperty("display", "none", "important");
 
   const container = document.getElementById("playerButtons");
   container.innerHTML = "";
 
-  const card = document.getElementById("card");
-  card.style.display = "none";
-  card.style.padding = "";
+  hideCardCompletely();
 
   players.forEach(player => {
     const button = document.createElement("button");
@@ -202,6 +193,48 @@ function showRevealScreen(players) {
 }
 
 /* ===========================
+   SHOW CARD AS FIXED OVERLAY
+=========================== */
+function showCardOverlay(card) {
+  card.style.display = "block";
+  card.style.position = "fixed";
+  card.style.top = "50%";
+  card.style.left = "50%";
+  card.style.transform = "translate(-50%, -50%)";
+  card.style.zIndex = "9999";
+  card.style.margin = "0";
+  card.style.width = "calc(100% - 48px)";
+  card.style.maxWidth = "432px";
+  card.style.height = "auto";
+  card.style.overflow = "visible";
+  card.style.padding = "28px";
+}
+
+/* ===========================
+   HIDE CARD COMPLETELY
+=========================== */
+function hideCardCompletely() {
+  const card = document.getElementById("card");
+  card.style.display = "none";
+  card.style.position = "";
+  card.style.top = "";
+  card.style.left = "";
+  card.style.transform = "";
+  card.style.zIndex = "";
+  card.style.margin = "";
+  card.style.width = "";
+  card.style.maxWidth = "";
+  card.style.height = "";
+  card.style.overflow = "";
+  card.style.padding = "";
+
+  if (card._clickHandler) {
+    card.removeEventListener("click", card._clickHandler);
+    card._clickHandler = null;
+  }
+}
+
+/* ===========================
    REVEAL CARD
 =========================== */
 function revealCard(playerName, buttonElement) {
@@ -212,7 +245,6 @@ function revealCard(playerName, buttonElement) {
 
   const isSpy = data.role === "Spy";
 
-  // FIX #1 — Role is the big <h2>, location is the supporting <p>
   card.innerHTML = `
     <div class="card-header">
       <h3>${isSpy ? "Classification" : "Your Role"}</h3>
@@ -224,15 +256,13 @@ function revealCard(playerName, buttonElement) {
     <small>Tap to hide, then pass the device.</small>
   `;
 
-  card.style.display = "block";
-  card.style.padding = "28px"; // FIX — CSS has padding:0, must force it open here
+  showCardOverlay(card);
   card.dataset.currentPlayer = playerName;
 
   if (buttonElement) {
     buttonElement.style.opacity = "0.5";
   }
 
-  // FIX #5 — Clean listener reference, no stacking
   if (card._clickHandler) {
     card.removeEventListener("click", card._clickHandler);
   }
@@ -245,9 +275,7 @@ function revealCard(playerName, buttonElement) {
 =========================== */
 function handleCardClick(e, playerName) {
   e.stopPropagation();
-
   const card = document.getElementById("card");
-
   if (
     e.target === card ||
     e.target.tagName === "SMALL" ||
@@ -269,14 +297,7 @@ function hideCard(event) {
   const currentPlayer = card.dataset.currentPlayer;
 
   if (currentPlayer && !revealedPlayers.has(currentPlayer)) {
-    card.style.display = "none";
-    card.style.padding = ""; // FIX — reset padding on hide
-
-    if (card._clickHandler) {
-      card.removeEventListener("click", card._clickHandler);
-      card._clickHandler = null;
-    }
-
+    hideCardCompletely();
     revealedPlayers.add(currentPlayer);
 
     const buttons = document.querySelectorAll("#playerButtons button");
@@ -287,7 +308,6 @@ function hideCard(event) {
       }
     });
 
-    // Only show Start Game after every player has viewed their card
     if (revealedPlayers.size === Object.keys(assignments).length) {
       document.getElementById("startGameBtn").style.setProperty("display", "flex", "important");
     }
@@ -300,8 +320,6 @@ function hideCard(event) {
 function startGame() {
   switchScreen("gameScreen");
   gameStarted = true;
-
-  // FIX #6 — Always hide gameActions at game start
   document.getElementById("gameActions").style.display = "none";
 
   timerPaused = false;
@@ -322,7 +340,6 @@ function startGame() {
 =========================== */
 function startTimer() {
   const display = document.getElementById("timerDisplay");
-
   if (timerInterval) clearInterval(timerInterval);
 
   function tick() {
@@ -344,7 +361,6 @@ function startTimer() {
       document.getElementById("gameActions").style.display = "flex";
       return;
     }
-
     remainingSeconds--;
   }
 
@@ -357,7 +373,6 @@ function startTimer() {
 =========================== */
 function toggleTimer() {
   const pauseBtn = document.getElementById("pauseBtn");
-
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
@@ -384,19 +399,8 @@ function switchScreen(screenId) {
 function revealWinner() {
   const playerNames = Object.keys(assignments);
   const spies = playerNames.filter(p => assignments[p].role === "Spy");
-
   const card = document.getElementById("card");
-  card.style.display = "block";
-  card.style.padding = "28px"; // FIX — force padding open
-  card.style.position = "fixed";
-  card.style.zIndex = "9999";
-  card.style.inset = "50%";
-  card.style.transform = "translate(-50%, -50%)";
-  card.style.margin = "0";
-  card.style.maxWidth = "432px";
-  card.style.width = "calc(100% - 48px)";
 
-  // FIX #2 — currentLocation is always a real string, never null
   card.innerHTML = `
     <div class="card-header">
       <h3>Game Over</h3>
@@ -409,17 +413,12 @@ function revealWinner() {
     <hr>
     <small>Location was: <strong>${currentLocation ?? "Unknown"}</strong></small>
   `;
+
+  showCardOverlay(card);
 }
 
 function hideRevealCard() {
-  const card = document.getElementById("card");
-  card.style.display = "none";
-  card.style.padding = ""; // FIX — reset padding
-  card.style.position = "";
-  card.style.zIndex = "";
-  card.style.inset = "";
-  card.style.transform = "";
-  card.style.margin = "";
+  hideCardCompletely();
   document.getElementById("gameActions").style.display = "flex";
 }
 
@@ -431,11 +430,8 @@ function goToNewGame() {
   timerInterval = null;
   timerPaused = false;
   remainingSeconds = 0;
-
-  // FIX #4 — Reset timerMinutes so old value doesn't bleed into new game
   timerMinutes = 0;
 
-  // FIX #6 — Reset gameActions and timer display
   document.getElementById("gameActions").style.display = "none";
   const display = document.getElementById("timerDisplay");
   display.textContent = "0:00";
@@ -453,7 +449,6 @@ function goToNewGame() {
 
   document.getElementById("spyCount").value = currentSpyCount;
 
-  // FIX #7 — Reset timer select and hide custom input
   const timerSelect = document.getElementById("timerSelect");
   timerSelect.value = "0";
   updateTimerDisplay();
